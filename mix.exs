@@ -17,7 +17,10 @@ defmodule Coney.Mixfile do
   end
 
   defp deps do
-    []
+    [
+      {:amqp, "~> 0.2"},
+      {:poison, "~> 3.1"}
+    ]
   end
 
   defp description do
