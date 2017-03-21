@@ -11,3 +11,5 @@ config :capsuline, Coney.AMQPConnection, [
     timeout: 1000
   }
 ]
+
+include "#{Mix.env}.exs"
