@@ -1,3 +1,3 @@
 use Mix.Config
 
-config :coney, Coney.AMQPConnection, adapter: Coney.FakeAMQPConnection, settings: %{}
+config :coney, Coney.AMQPConnection, adapter: Coney.FakeConnection, settings: %{}
