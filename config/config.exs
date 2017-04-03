@@ -12,4 +12,4 @@ config :capsuline, Coney.AMQPConnection, [
   }
 ]
 
-include "#{Mix.env}.exs"
+import_config "#{Mix.env}.exs"
