@@ -74,7 +74,7 @@ end
 ### .process return format
 
 1. `{:ok, any}` - message will be marked as performed.
-1. `{:error, reason}` - message will be returned to queue one time.
+1. `{:error, reason}` - message will be returned to queue once.
 1. `{:reply, any}` - response will be published to reply exchange.
 
 ### Reply description
