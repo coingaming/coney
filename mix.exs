@@ -32,7 +32,7 @@ defmodule Coney.Mixfile do
   defp package do
     [
      name: :coney,
-     files: ["lib", "config", "mix.exs", "README.md", "LICENSE.txt"],
+     files: ["lib", "mix.exs", "README.md", "LICENSE.txt"],
      maintainers: ["Aleksandr Fomin"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/llxff/coney"}]

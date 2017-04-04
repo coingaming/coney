@@ -1,4 +1,4 @@
-defmodule Coney.FakeConnection do
+defmodule Coney.Test.FakeConnection do
   @behaviour Coney.AMQPConnection
 
   def open(_) do

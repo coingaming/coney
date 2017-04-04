@@ -4,7 +4,7 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:consumer, :tag, :redelivered]
 
-config :capsuline, Coney.AMQPConnection, [
+config :coney, Coney.AMQPConnection, [
   adapter: Coney.RabbitConnection,
   settings: %{
     url: "amqp://guest:guest@localhost",
