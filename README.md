@@ -1,5 +1,7 @@
 # Coney
 
+[![Build Status](https://travis-ci.org/llxff/coney.svg?branch=master)](https://travis-ci.org/llxff/coney)
+
 **TODO: Add description**
 
 ## Installation
