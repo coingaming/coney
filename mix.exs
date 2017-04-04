@@ -19,7 +19,7 @@ defmodule Coney.Mixfile do
   defp deps do
     [
       {:amqp, "~> 0.2"},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 2.0 or ~> 3.0"}
     ]
   end
 
