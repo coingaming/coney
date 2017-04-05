@@ -23,21 +23,38 @@ defmodule Coney.RabbitConnection do
   end
 
   def subscribe(chan, consumer_pid, consumer) do
-    %{prefetch_count: prefetch_count, subscribe: subscribe} = consumer.connection
-    {exchange_type, exchange_name, queue} = subscribe
+    connection = consumer.connection
 
-    Basic.qos(chan, prefetch_count: prefetch_count)
-    Queue.declare(chan, queue, durable: true)
+    Basic.qos(chan, prefetch_count: connection.prefetch_count)
 
-    Exchange.declare(chan, exchange_name, exchange_type, durable: true)
+    exchange_name = declare_exchange(chan, connection.exchange)
+    queue = declare_queue(chan, connection.queue)
 
     Queue.bind(chan, queue, exchange_name)
 
     {:ok, _consumer_tag} = Basic.consume(chan, queue, consumer_pid)
   end
 
-  def respond_to(chan, {exchange_type, exchange_name}) do
-    Exchange.declare(chan, exchange_name, exchange_type, durable: true)
+  defp declare_exchange(chan, {type, name}) do
+    declare_exchange(chan, {type, name, []})
+  end
+
+  defp declare_exchange(chan, {type, name, params}) do
+    Exchange.declare(chan, name, type, params)
+    name
+  end
+
+  defp declare_queue(chan, {name}) do
+    declare_queue(chan, {name, []})
+  end
+
+  defp declare_queue(chan, {name, params}) do
+    Queue.declare(chan, name, params)
+    name
+  end
+
+  def respond_to(chan, exchange) do
+    declare_exchange(chan, exchange)
   end
 
   def publish(chan, exchange_name, routing_key, message) do

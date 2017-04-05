@@ -12,7 +12,7 @@ Add Coney as a dependency in your `mix.exs` file.
 
 ```elixir
 def deps do
-  [{:coney, "~> 0.1.0"}]
+  [{:coney, "~> 0.2"}]
 end
 ```
 
@@ -48,7 +48,8 @@ defmodule MyApplication.MyConsumer do
   def connection do
     %{
       prefetch_count: 10,
-      subscribe:      {:fanout, "my_exchange", "my_queue"}
+      exchange:       {:fanout, "my_exchange", durable: true},
+      queue:          {"my_queue", durable: true}
     }
   end
 
@@ -64,7 +65,7 @@ defmodule MyApplication.MyConsumer do
     end
   end
   
-  def error_happen(exception, payload) do
+  def error_happened(exception, payload) do
     IO.inspect System.stacktrace()
     IO.puts "Exception raised with #{ payload }"
   end
@@ -87,7 +88,7 @@ To use `{:reply, response}` you should add response exchange in `connection`:
 def connection do
   %{
     # ...
-    respond_to: {:fanout, "response_exchange"}
+    respond_to: {:fanout, "response_exchange", durable: true}
   }
 end
 ```
@@ -96,4 +97,12 @@ Response will be serialized to JSON and publish to `"response_exchange"` exchang
 
 ### Notice
 
-Exchange with routing key and additional params for exchange/queue currently is not supported.
+Reply with additional params and routing key currently is not supported.
+
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/llxff/coney.
+
+## License
+
+The library is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).

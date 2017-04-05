@@ -24,7 +24,7 @@ defmodule Coney.ConsumerExecutor do
       exception ->
         redeliver(consumer, exception, connection, task)
         Logger.error(fn -> inspect(System.stacktrace()) end, [tag: task.tag, consumer: consumer])
-        consumer.error_happen(exception, task.payload)
+        consumer.error_happened(exception, task.payload)
         :failed
     end
   end
@@ -39,7 +39,7 @@ defmodule Coney.ConsumerExecutor do
     Logger.info("Work done with response", [tag: task.tag, consumer: consumer])
 
     ConnectionServer.confirm(connection.subscribe_channel, task.tag)
-    {_, exchange_name} = consumer.connection.respond_to
+    exchange_name = elem(consumer.connection.respond_to, 1)
     ConnectionServer.publish(connection.publish_channel, exchange_name, "", Poison.encode!(response))
   end
 

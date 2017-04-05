@@ -1,13 +1,10 @@
 defmodule Coney.Test.FakeConsumer do
-  def prefetch_count, do: 10
-  def exchange, do: {:fanout, "test_exchange"}
-  def queue, do: "test_queue"
-
   def connection do
     %{
       prefetch_count: 10,
-      subscribe:      {:fanout, "subscribe_exchange", "queue"},
-      respond_to:     {:fanout, "response_exchange"}
+      exchange:       {:fanout, "subscribe_exchange", durable: true},
+      queue:          {"queue"},
+      respond_to:     {:fanout, "response_exchange", durable: true}
     }
   end
 
@@ -24,7 +21,7 @@ defmodule Coney.Test.FakeConsumer do
     end
   end
 
-  def error_happen(_exception, _payload) do
+  def error_happened(_exception, _payload) do
     :handled
   end
 end
