@@ -5,11 +5,14 @@ defmodule ConsumerServerTest do
   alias Coney.Test.FakeConsumer
 
   setup do
-    [state: [FakeConsumer, :channel]]
+    [
+      args: [FakeConsumer, :channel],
+      state: %{consumer: FakeConsumer, connection: :channel}
+    ]
   end
 
-  test "initial state", %{state: state} do
-    assert {:ok, {FakeConsumer, :channel}} = ConsumerServer.init(state)
+  test "initial state", %{args: args, state: state} do
+    assert {:ok, ^state} = ConsumerServer.init(args)
   end
 
   test ":basic_consume_ok", %{state: state} do
@@ -24,9 +27,9 @@ defmodule ConsumerServerTest do
     assert {:noreply, ^state} = ConsumerServer.handle_info({:basic_cancel_ok, %{consumer_tag: nil}}, state)
   end
 
-  test ":basic_deliver", %{state: [consumer, channel]} do
+  test ":basic_deliver", %{state: state} do
     message = {:basic_deliver, :payload, %{delivery_tag: :tag, redelivered: :redelivered}}
 
-    assert {:noreply, {^consumer, ^channel}} = ConsumerServer.handle_info(message, {consumer, channel})
+    assert {:noreply, ^state} = ConsumerServer.handle_info(message, state)
   end
 end
