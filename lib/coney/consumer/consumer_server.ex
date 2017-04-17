@@ -11,7 +11,7 @@ defmodule Coney.ConsumerServer do
 
   def init([consumer, connection]) do
     Logger.info "ConsumerServer started", [consumer: consumer]
-    {:ok, {consumer, connection}}
+    {:ok, %{consumer: consumer, connection: connection}}
   end
 
   def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, state) do
@@ -26,10 +26,10 @@ defmodule Coney.ConsumerServer do
     {:noreply, state}
   end
 
-  def handle_info({:basic_deliver, payload, %{delivery_tag: tag, redelivered: redelivered}}, {consumer, connection} = state) do
-    Logger.info("Message received", [tag: tag, redelivered: redelivered, consumer: consumer])
+  def handle_info({:basic_deliver, payload, %{delivery_tag: tag, redelivered: redelivered}}, state) do
+    Logger.info("Message received", [tag: tag, redelivered: redelivered, consumer: state.consumer])
 
-    task = ExecutionTask.build(consumer, connection, payload, tag, redelivered)
+    task = ExecutionTask.build(state.consumer, state.connection, payload, tag, redelivered)
 
     spawn(ConsumerExecutor, :consume, [task])
 
