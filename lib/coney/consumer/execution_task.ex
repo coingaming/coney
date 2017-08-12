@@ -6,6 +6,6 @@ defmodule Coney.ExecutionTask do
             redelivered: false
 
   def build(consumer, connection, payload, tag, redelivered) do
-    %Coney.ExecutionTask{consumer: consumer, connection: connection, payload: payload, tag: tag, redelivered: redelivered}
+    %__MODULE__{consumer: consumer, connection: connection, payload: payload, tag: tag, redelivered: redelivered}
   end
 end
