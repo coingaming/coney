@@ -30,7 +30,7 @@ defmodule Coney.RabbitConnection do
     exchange_name = declare_exchange(chan, connection.exchange)
     queue = declare_queue(chan, connection.queue)
 
-    Queue.bind(chan, queue, exchange_name)
+    Queue.bind(chan, queue, exchange_name, Map.get(connection, :binding, []))
 
     {:ok, _consumer_tag} = Basic.consume(chan, queue, consumer_pid)
   end

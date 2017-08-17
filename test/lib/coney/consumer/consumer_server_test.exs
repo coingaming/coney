@@ -28,7 +28,7 @@ defmodule ConsumerServerTest do
   end
 
   test ":basic_deliver", %{state: state} do
-    message = {:basic_deliver, :payload, %{delivery_tag: :tag, redelivered: :redelivered}}
+    message = {:basic_deliver, :payload, %{delivery_tag: :tag, redelivered: :redelivered, routing_key: ""}}
 
     assert {:noreply, ^state} = ConsumerServer.handle_info(message, state)
   end

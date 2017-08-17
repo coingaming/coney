@@ -40,7 +40,15 @@ defmodule Coney.ConsumerExecutor do
 
     ConnectionServer.confirm(connection.subscribe_channel, task.tag)
     exchange_name = elem(consumer.connection.respond_to, 1)
-    ConnectionServer.publish(connection.publish_channel, exchange_name, "", Poison.encode!(response))
+    send_message(connection.publish_channel, exchange_name, response)
+  end
+
+  defp send_message(channel, exchange, {routing_key, response}) do
+    ConnectionServer.publish(channel, exchange, routing_key, Poison.encode!(response))
+  end
+
+  defp send_message(channel, exchange, response) do
+    send_message(channel, exchange, {"", response})
   end
 
   defp redeliver(consumer, reason, connection, task) do

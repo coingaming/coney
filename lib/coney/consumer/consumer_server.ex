@@ -9,6 +9,11 @@ defmodule Coney.ConsumerServer do
     GenServer.start_link(__MODULE__, [consumer, connection])
   end
 
+  def init([%{worker: consumer}, connection]) do
+    Logger.info "ConsumerServer started", [consumer: consumer]
+    {:ok, %{consumer: consumer, connection: connection}}
+  end
+
   def init([consumer, connection]) do
     Logger.info "ConsumerServer started", [consumer: consumer]
     {:ok, %{consumer: consumer, connection: connection}}
@@ -26,8 +31,21 @@ defmodule Coney.ConsumerServer do
     {:noreply, state}
   end
 
-  def handle_info({:basic_deliver, payload, %{delivery_tag: tag, redelivered: redelivered}}, state) do
-    Logger.info("Message received", [tag: tag, redelivered: redelivered, consumer: state.consumer])
+  def handle_info(
+    {
+      :basic_deliver,
+      payload,
+      %{delivery_tag: tag, redelivered: redelivered, routing_key: routing_key}
+    },
+    state
+  )
+  do
+    Logger.info("Message received", [
+      tag: tag,
+      redelivered: redelivered,
+      consumer: state.consumer,
+      routing_key: routing_key
+    ])
 
     task = ExecutionTask.build(state.consumer, state.connection, payload, tag, redelivered)
 
