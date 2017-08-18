@@ -24,26 +24,46 @@ defmodule Coney.ConnectionServer do
     GenServer.call(@name, {:reject, channel, tag, requeue})
   end
 
+  def publish(exchange_name, message) do
+    GenServer.call(@name, {:publish, exchange_name, message})
+  end
+
+  def publish(exchange_name, routing_key, message) do
+    GenServer.call(@name, {:publish, exchange_name, routing_key, message})
+  end
+
   def publish(channel, exchange_name, routing_key, message) do
     GenServer.call(@name, {:publish, channel, exchange_name, routing_key, message})
   end
 
-  def handle_call({:confirm, channel, tag}, _from, adapter) do
+  def handle_call({:confirm, channel, tag}, _from, %{adapter: adapter} = state) do
     adapter.confirm(channel, tag)
 
-    {:reply, :ok, adapter}
+    {:reply, :ok, state}
   end
 
-  def handle_call({:reject, channel, tag, requeue}, _from, adapter) do
+  def handle_call({:reject, channel, tag, requeue}, _from, %{adapter: adapter} = state) do
     adapter.reject(channel, tag, requeue: requeue)
 
-    {:reply, :ok, adapter}
+    {:reply, :ok, state}
   end
 
-  def handle_call({:publish, channel, exchange_name, routing_key, message}, _from, adapter) do
-    adapter.publish(channel, exchange_name, routing_key, message)
+  def handle_call({:publish, exchange_name, message}, _from, state) do
+    state.adapter.publish(state.pub_chan, exchange_name, "", message)
 
-    {:reply, :ok, adapter}
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:publish, exchange_name, routing_key, message}, _from, state) do
+    state.adapter.publish(state.pub_chan, exchange_name, routing_key, message)
+
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:publish, channel, exchange_name, routing_key, message}, _from, state) do
+    state.adapter.publish(channel, exchange_name, routing_key, message)
+
+    {:reply, :ok, state}
   end
 
   defp rabbitmq_connect(consumers, adapter: adapter, settings: settings) do
@@ -51,7 +71,7 @@ defmodule Coney.ConnectionServer do
 
     start_consumers(consumers, adapter, conn)
 
-    {:ok, adapter}
+    {:ok, %{adapter: adapter, pub_chan: adapter.create_channel(conn)}}
   end
 
   defp start_consumers(consumers, adapter, conn) do

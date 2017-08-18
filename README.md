@@ -42,14 +42,31 @@ children = [
   supervisor(Coney.ApplicationSupervisor, [[MyApplication.MyConsumer]])
 ]
 
+# or
+children = [
+  # ...
+  supervisor(Coney.ApplicationSupervisor, [[
+    %{
+      connection: %{
+        prefetch_count: 10,
+        exchange:       {:direct, "my_exchange", durable: true},
+        queue:          {"my_queue", durable: true},
+        binding:        [routing_key: "routnig_key"]
+      },
+      worker: MyApplication.MyConsumer
+    }
+  ]])
+]
+
 # web/consumers/my_consumer.ex
 
 defmodule MyApplication.MyConsumer do
   def connection do
     %{
       prefetch_count: 10,
-      exchange:       {:fanout, "my_exchange", durable: true},
-      queue:          {"my_queue", durable: true}
+      exchange:       {:direct, "my_exchange", durable: true},
+      queue:          {"my_queue", durable: true},
+      binding:        [routing_key: "routnig_key"]
     }
   end
 
@@ -72,11 +89,13 @@ defmodule MyApplication.MyConsumer do
 end
 ```
 
+
 ### .process return format
 
 1. `{:ok, any}` - message will be marked as performed.
 1. `{:error, reason}` - message will be returned to queue once.
 1. `{:reply, any}` - response will be published to reply exchange.
+1. `{:redeliver, any}` - response will be returned to queue.
 
 ### Reply description
 
@@ -95,9 +114,15 @@ end
 
 Response will be serialized to JSON and publish to `"response_exchange"` exchange.
 
-### Notice
+### Publish message
 
-Reply with additional params and routing key currently is not supported.
+```elixir
+Coney.ConnectionServer.publish("exchange", "message")
+
+# or
+
+Coney.ConnectionServer.publish("exchange", "routing_key", "message")
+```
 
 ## Contributing
 

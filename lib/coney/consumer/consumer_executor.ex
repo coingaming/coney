@@ -19,6 +19,9 @@ defmodule Coney.ConsumerExecutor do
         {:error, reason} ->
           redeliver(consumer, reason, connection, task)
           :rejected
+        {:redeliver, reason} ->
+          redeliver(consumer, reason, connection, %{task | redelivered: false})
+          :rejected
       end
     rescue
       exception ->
