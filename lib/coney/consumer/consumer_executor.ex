@@ -5,7 +5,7 @@ defmodule Coney.ConsumerExecutor do
 
   def consume(task = %ExecutionTask{consumer: consumer, connection: connection}) do
     try do
-      Logger.debug(fn -> inspect(task.payload) end, [tag: task.tag, consumer: consumer])
+      Logger.info(fn -> inspect(task.payload) end, [tag: task.tag, consumer: consumer])
 
       data = consumer.parse(task.payload)
 
