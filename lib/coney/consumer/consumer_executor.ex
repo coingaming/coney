@@ -16,6 +16,9 @@ defmodule Coney.ConsumerExecutor do
         {:reply, response} ->
           reply(consumer, response, connection, task)
           :replied
+        {:reject, reason} ->
+          redeliver(consumer, reason, connection, %{task | redelivered: true})
+          :rejected
         {:error, reason} ->
           redeliver(consumer, reason, connection, task)
           :rejected
