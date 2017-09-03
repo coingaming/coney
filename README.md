@@ -94,6 +94,7 @@ end
 
 1. `{:ok, any}` - message will be marked as performed.
 1. `{:error, reason}` - message will be returned to queue once.
+1. `{:reject, reason}` - message will be rejected.
 1. `{:reply, any}` - response will be published to reply exchange.
 1. `{:redeliver, any}` - response will be returned to queue.
 
