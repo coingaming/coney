@@ -1,3 +1,18 @@
+## [0.4.3]
+
+### Changes
+
+- Allow to define several RabbitMQ hosts for connection (will be used random host from list)
+
+  ```elixir
+  # config/config.exs
+
+  config :coney, Coney.AMQPConnection, [
+    settings: %{
+      url: ["amqp://guest:guest@localhost", "amqp://guest:guest@other_host"]
+    }
+  ]
+  ```
 ## [0.4.2]
 
 ### Changes

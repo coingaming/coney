@@ -6,7 +6,7 @@ defmodule Coney.RabbitConnection do
   @behaviour Coney.AMQPConnection
 
   def open(settings = %{url: url, timeout: timeout}) do
-    case Connection.open(url) do
+    case connect(url) do
       {:ok, conn} ->
         Process.link(conn.pid)
         conn
@@ -16,6 +16,15 @@ defmodule Coney.RabbitConnection do
         open(settings)
     end
   end
+
+  defp connect(url) do
+    url
+    |> choose_server()
+    |> Connection.open()
+  end
+
+  defp choose_server(url) when is_binary(url), do: url
+  defp choose_server(urls) when is_list(urls), do: Enum.random(urls)
 
   def create_channel(conn) do
     {:ok, chan} = Channel.open(conn)
