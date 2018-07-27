@@ -1,6 +1,4 @@
 defmodule Coney.ConnectionServer do
-  require Logger
-
   use GenServer
 
   alias Coney.{ConsumerSupervisor, ConsumerConnection}
@@ -12,7 +10,6 @@ defmodule Coney.ConnectionServer do
   end
 
   def init([consumers, settings]) do
-    Logger.info "ConnectionServer started"
     rabbitmq_connect(consumers, settings)
   end
 
@@ -39,31 +36,35 @@ defmodule Coney.ConnectionServer do
   def handle_call({:confirm, channel, tag}, _from, %{adapter: adapter} = state) do
     adapter.confirm(channel, tag)
 
-    {:reply, :ok, state}
+    {:reply, :confirmed, state}
   end
 
   def handle_call({:reject, channel, tag, requeue}, _from, %{adapter: adapter} = state) do
     adapter.reject(channel, tag, requeue: requeue)
 
-    {:reply, :ok, state}
+    {:reply, :rejected, state}
   end
 
-  def handle_call({:publish, exchange_name, message}, _from, state) do
-    state.adapter.publish(state.pub_chan, exchange_name, "", message)
+  def handle_call(
+        {:publish, exchange_name, message},
+        _from,
+        %{adapter: adapter, pub_chan: pub_chan} = state
+      ) do
+    adapter.publish(pub_chan, exchange_name, "", message)
 
-    {:reply, :ok, state}
+    {:reply, :published, state}
   end
 
   def handle_call({:publish, exchange_name, routing_key, message}, _from, state) do
     state.adapter.publish(state.pub_chan, exchange_name, routing_key, message)
 
-    {:reply, :ok, state}
+    {:reply, :published, state}
   end
 
   def handle_call({:publish, channel, exchange_name, routing_key, message}, _from, state) do
     state.adapter.publish(channel, exchange_name, routing_key, message)
 
-    {:reply, :ok, state}
+    {:reply, :published, state}
   end
 
   defp rabbitmq_connect(consumers, adapter: adapter, settings: settings) do
@@ -75,7 +76,7 @@ defmodule Coney.ConnectionServer do
   end
 
   defp start_consumers(consumers, adapter, conn) do
-    Enum.each consumers, fn (consumer) ->
+    Enum.each(consumers, fn consumer ->
       subscribe_chan = adapter.create_channel(conn)
       publish_chan = respond_to(adapter, conn, consumer.connection)
 
@@ -84,7 +85,7 @@ defmodule Coney.ConnectionServer do
       {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, connection)
 
       adapter.subscribe(subscribe_chan, pid, consumer)
-    end
+    end)
   end
 
   defp respond_to(adapter, conn, %{respond_to: exchange}) do
@@ -93,5 +94,6 @@ defmodule Coney.ConnectionServer do
 
     chan
   end
+
   defp respond_to(_adapter, _conn, _settings), do: nil
 end

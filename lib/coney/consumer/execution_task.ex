@@ -3,9 +3,9 @@ defmodule Coney.ExecutionTask do
             connection: nil,
             payload: nil,
             tag: nil,
-            redelivered: false
+            meta: %{}
 
-  def build(consumer, connection, payload, tag, redelivered) do
-    %__MODULE__{consumer: consumer, connection: connection, payload: payload, tag: tag, redelivered: redelivered}
+  def build(consumer, connection, payload, tag, meta) do
+    %__MODULE__{consumer: consumer, connection: connection, payload: payload, tag: tag, meta: meta}
   end
 end

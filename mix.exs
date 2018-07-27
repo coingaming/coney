@@ -2,24 +2,26 @@ defmodule Coney.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :coney,
-     version: "0.4.3",
-     elixir: "~> 1.4",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     description: description(),
-     package: package(),
-     deps: deps()]
+    [
+      app: :coney,
+      version: "1.0.0",
+      elixir: ">= 1.4.0",
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      description: description(),
+      package: package(),
+      elixirc_paths: elixirc_paths(Mix.env()),
+      deps: deps()
+    ]
   end
 
   def application do
-    [extra_applications: [:logger]]
+    [extra_applications: []]
   end
 
   defp deps do
     [
-      {:amqp, "~> 0.3"},
-      {:poison, "~> 2.0 or ~> 3.0"},
+      {:amqp, "~> 1.0"},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
@@ -30,12 +32,17 @@ defmodule Coney.Mixfile do
     """
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+
+  defp elixirc_paths(_), do: ["lib"]
+
   defp package do
     [
-     name: :coney,
-     files: ["lib", "mix.exs", "README.md", "LICENSE.txt"],
-     maintainers: ["Aleksandr Fomin"],
-     licenses: ["MIT"],
-     links: %{"GitHub" => "https://github.com/llxff/coney"}]
+      name: :coney,
+      files: ["lib", "mix.exs", "README.md", "LICENSE.txt"],
+      maintainers: ["Aleksandr Fomin"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/llxff/coney"}
+    ]
   end
 end

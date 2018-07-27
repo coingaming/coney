@@ -1,3 +1,3 @@
 ExUnit.start()
 
-Coney.ConnectionServer.start_link([], Application.get_env(:coney, Coney.AMQPConnection))
+Coney.ConnectionServer.start_link([], Coney.ApplicationSupervisor.settings())

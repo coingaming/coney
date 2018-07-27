@@ -1,66 +1,78 @@
 defmodule Coney.ConsumerExecutor do
-  require Logger
+  alias Coney.{ConnectionServer, ExecutionTask, ConsumerConnection}
 
-  alias Coney.{ConnectionServer, ExecutionTask}
-
-  def consume(task = %ExecutionTask{consumer: consumer, connection: connection}) do
+  def consume(
+        %ExecutionTask{consumer: consumer, connection: connection, payload: payload, meta: meta} =
+          task
+      ) do
     try do
-      Logger.info(fn -> inspect(task.payload) end, [tag: task.tag, consumer: consumer])
-
-      data = consumer.parse(task.payload)
-
-      case consumer.process(data) do
-        {:ok, _} ->
-          noreply(consumer, connection, task)
-          :confirmed
-        {:reply, response} ->
-          reply(consumer, response, connection, task)
-          :replied
-        {:reject, reason} ->
-          redeliver(consumer, reason, connection, %{task | redelivered: true})
-          :rejected
-        {:error, reason} ->
-          redeliver(consumer, reason, connection, task)
-          :rejected
-        {:redeliver, reason} ->
-          redeliver(consumer, reason, connection, %{task | redelivered: false})
-          :rejected
-      end
+      payload
+      |> consumer.parse(meta)
+      |> consumer.process(meta)
+      |> handle_result(consumer, connection, task)
     rescue
       exception ->
-        redeliver(consumer, exception, connection, task)
-        Logger.error(fn -> inspect(System.stacktrace()) end, [tag: task.tag, consumer: consumer])
-        consumer.error_happened(exception, task.payload)
-        :failed
+        if function_exported?(consumer, :error_happened, 3) do
+          exception
+          |> consumer.error_happened(payload, meta)
+          |> handle_result(consumer, connection, task)
+        else
+          reject(consumer, connection, task)
+        end
     end
   end
 
-  def noreply(consumer, connection, task) do
-    Logger.info("Work done", [tag: task.tag, consumer: consumer])
+  defp handle_result(result, consumer, connection, task) do
+    case result do
+      :ok ->
+        ack(consumer, connection, task)
 
-    ConnectionServer.confirm(connection.subscribe_channel, task.tag)
+      :reject ->
+        reject(consumer, connection, task)
+
+      :redeliver ->
+        redeliver(consumer, connection, task)
+
+      {:reply, response} ->
+        reply(consumer, response, connection, task)
+    end
   end
 
-  def reply(consumer, response, connection, task) do
-    Logger.info("Work done with response", [tag: task.tag, consumer: consumer])
+  defp ack(consumer, connection, %ExecutionTask{tag: tag}) do
+    ConnectionServer.confirm(connection.subscribe_channel, tag)
+  end
 
-    ConnectionServer.confirm(connection.subscribe_channel, task.tag)
+  defp reply(
+         consumer,
+         response,
+         %ConsumerConnection{publish_channel: publish_channel} = connection,
+         %ExecutionTask{tag: tag} = task
+       ) do
+    ack(consumer, connection, task)
+
     exchange_name = elem(consumer.connection.respond_to, 1)
-    send_message(connection.publish_channel, exchange_name, response)
+    send_message(publish_channel, exchange_name, response)
+  end
+
+  defp redeliver(
+         consumer,
+         %ConsumerConnection{subscribe_channel: subscribe_channel},
+         %ExecutionTask{tag: tag}
+       ) do
+    ConnectionServer.reject(subscribe_channel, tag, true)
+  end
+
+  defp reject(consumer, %ConsumerConnection{subscribe_channel: subscribe_channel}, %ExecutionTask{
+         tag: tag
+       }) do
+    ConnectionServer.reject(subscribe_channel, tag, false)
   end
 
   defp send_message(channel, exchange, {routing_key, response}) do
-    ConnectionServer.publish(channel, exchange, routing_key, Poison.encode!(response))
+    ConnectionServer.publish(channel, exchange, routing_key, response)
   end
 
   defp send_message(channel, exchange, response) do
     send_message(channel, exchange, {"", response})
-  end
-
-  defp redeliver(consumer, reason, connection, task) do
-    Logger.error("Consumer failed", [tag: task.tag, consumer: consumer])
-    Logger.error(fn -> inspect(reason) end, [tag: task.tag, consumer: consumer])
-
-    ConnectionServer.reject(connection.subscribe_channel, task.tag, !task.redelivered)
   end
 end

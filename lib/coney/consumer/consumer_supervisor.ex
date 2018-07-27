@@ -1,6 +1,4 @@
 defmodule Coney.ConsumerSupervisor do
-  require Logger
-
   use Supervisor
 
   @name __MODULE__

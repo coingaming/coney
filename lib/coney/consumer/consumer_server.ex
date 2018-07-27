@@ -1,6 +1,4 @@
 defmodule Coney.ConsumerServer do
-  require Logger
-
   use GenServer
 
   alias Coney.{ConsumerExecutor, ExecutionTask}
@@ -10,12 +8,10 @@ defmodule Coney.ConsumerServer do
   end
 
   def init([%{worker: consumer}, connection]) do
-    Logger.info "ConsumerServer started", [consumer: consumer]
     {:ok, %{consumer: consumer, connection: connection}}
   end
 
   def init([consumer, connection]) do
-    Logger.info "ConsumerServer started", [consumer: consumer]
     {:ok, %{consumer: consumer, connection: connection}}
   end
 
@@ -32,22 +28,14 @@ defmodule Coney.ConsumerServer do
   end
 
   def handle_info(
-    {
-      :basic_deliver,
-      payload,
-      %{delivery_tag: tag, redelivered: redelivered, routing_key: routing_key}
-    },
-    state
-  )
-  do
-    Logger.info("Message received", [
-      tag: tag,
-      redelivered: redelivered,
-      consumer: state.consumer,
-      routing_key: routing_key
-    ])
-
-    task = ExecutionTask.build(state.consumer, state.connection, payload, tag, redelivered)
+        {
+          :basic_deliver,
+          payload,
+          %{delivery_tag: tag} = meta
+        },
+        %{consumer: consumer, connection: connection} = state
+      ) do
+    task = ExecutionTask.build(consumer, connection, payload, tag, meta)
 
     spawn(ConsumerExecutor, :consume, [task])
 
