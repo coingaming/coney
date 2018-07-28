@@ -17,7 +17,7 @@ defmodule Coney.ConsumerExecutor do
           |> consumer.error_happened(payload, meta)
           |> handle_result(consumer, connection, task)
         else
-          reject(consumer, connection, task)
+          reject(connection, task)
         end
     end
   end
@@ -25,20 +25,20 @@ defmodule Coney.ConsumerExecutor do
   defp handle_result(result, consumer, connection, task) do
     case result do
       :ok ->
-        ack(consumer, connection, task)
+        ack(connection, task)
 
       :reject ->
-        reject(consumer, connection, task)
+        reject(connection, task)
 
       :redeliver ->
-        redeliver(consumer, connection, task)
+        redeliver(connection, task)
 
       {:reply, response} ->
         reply(consumer, response, connection, task)
     end
   end
 
-  defp ack(consumer, connection, %ExecutionTask{tag: tag}) do
+  defp ack(connection, %ExecutionTask{tag: tag}) do
     ConnectionServer.confirm(connection.subscribe_channel, tag)
   end
 
@@ -46,23 +46,22 @@ defmodule Coney.ConsumerExecutor do
          consumer,
          response,
          %ConsumerConnection{publish_channel: publish_channel} = connection,
-         %ExecutionTask{tag: tag} = task
+         task
        ) do
-    ack(consumer, connection, task)
+    ack(connection, task)
 
     exchange_name = elem(consumer.connection.respond_to, 1)
     send_message(publish_channel, exchange_name, response)
   end
 
   defp redeliver(
-         consumer,
          %ConsumerConnection{subscribe_channel: subscribe_channel},
          %ExecutionTask{tag: tag}
        ) do
     ConnectionServer.reject(subscribe_channel, tag, true)
   end
 
-  defp reject(consumer, %ConsumerConnection{subscribe_channel: subscribe_channel}, %ExecutionTask{
+  defp reject(%ConsumerConnection{subscribe_channel: subscribe_channel}, %ExecutionTask{
          tag: tag
        }) do
     ConnectionServer.reject(subscribe_channel, tag, false)

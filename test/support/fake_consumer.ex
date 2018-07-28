@@ -23,7 +23,7 @@ defmodule FakeConsumer do
     end
   end
 
-  def error_happened(_exception, payload, _meta) do
+  def error_happened(_exception, _payload, _meta) do
     :ok
   end
 end
