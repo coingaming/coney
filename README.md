@@ -25,6 +25,7 @@ After you are done, run `mix deps.get` in your shell to fetch and compile Coney.
 
 config :coney,
   adapter: Coney.RabbitConnection,
+  pool_size: 1,
   settings: %{
     url: "amqp://guest:guest@localhost", # or ["amqp://guest:guest@localhost", "amqp://guest:guest@other_host"]
     timeout: 1000

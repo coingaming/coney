@@ -9,6 +9,7 @@
 - Added `Coney.Consumer` behaviour
 - `Coney.AMQPConnection` removed from configs
 - Logging removed
+- Added option `pool_size` - number of RabbitMQ connections.
 
 ## [0.4.3]
 
