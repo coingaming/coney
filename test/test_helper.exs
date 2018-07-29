@@ -1,3 +1,3 @@
 ExUnit.start()
 
-Coney.ConnectionServer.start_link([], Coney.ApplicationSupervisor.settings())
+Coney.PoolSupervisor.start_link([], Coney.ApplicationSupervisor.settings())

@@ -38,40 +38,41 @@ defmodule Coney.ConsumerExecutor do
     end
   end
 
-  defp ack(connection, %ExecutionTask{tag: tag}) do
-    ConnectionServer.confirm(connection.subscribe_channel, tag)
+  defp ack(%ConsumerConnection{connection_pid: pid, subscribe_channel: channel}, %ExecutionTask{
+         tag: tag
+       }) do
+    ConnectionServer.confirm(pid, channel, tag)
   end
 
-  defp reply(
-         consumer,
-         response,
-         %ConsumerConnection{publish_channel: publish_channel} = connection,
-         task
-       ) do
+  defp reply(consumer, response, connection, task) do
     ack(connection, task)
 
     exchange_name = elem(consumer.connection.respond_to, 1)
-    send_message(publish_channel, exchange_name, response)
+    send_message(connection, exchange_name, response)
   end
 
   defp redeliver(
-         %ConsumerConnection{subscribe_channel: subscribe_channel},
+         %ConsumerConnection{connection_pid: pid, subscribe_channel: channel},
          %ExecutionTask{tag: tag}
        ) do
-    ConnectionServer.reject(subscribe_channel, tag, true)
+    ConnectionServer.reject(pid, channel, tag, true)
   end
 
-  defp reject(%ConsumerConnection{subscribe_channel: subscribe_channel}, %ExecutionTask{
+  defp reject(%ConsumerConnection{connection_pid: pid, subscribe_channel: channel}, %ExecutionTask{
          tag: tag
        }) do
-    ConnectionServer.reject(subscribe_channel, tag, false)
+    ConnectionServer.reject(pid, channel, tag, false)
   end
 
-  defp send_message(channel, exchange, {routing_key, response}) do
-    ConnectionServer.publish(channel, exchange, routing_key, response)
+  defp send_message(
+         %ConsumerConnection{connection_pid: pid, publish_channel: channel},
+         exchange,
+         {routing_key, response}
+       ) do
+    ConnectionServer.publish(pid, channel, exchange, routing_key, response)
   end
 
-  defp send_message(channel, exchange, response) do
-    send_message(channel, exchange, {"", response})
+  defp send_message(connection, exchange, response) do
+    send_message(connection, exchange, {"", response})
   end
 end

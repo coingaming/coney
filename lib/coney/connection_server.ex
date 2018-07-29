@@ -1,36 +1,44 @@
 defmodule Coney.ConnectionServer do
   use GenServer
 
-  alias Coney.{ConsumerSupervisor, ConsumerConnection}
+  alias Coney.{ConsumerSupervisor, ConsumerConnection, PoolSupervisor, ApplicationSupervisor}
 
-  @name __MODULE__
-
-  def start_link(consumers, settings) do
-    GenServer.start_link(@name, [consumers, settings], name: @name)
+  def start_link(pool_pid, consumers, settings) do
+    GenServer.start_link(__MODULE__, [pool_pid, consumers, settings])
   end
 
-  def init([consumers, settings]) do
-    rabbitmq_connect(consumers, settings)
+  def init([pool_pid, consumers, settings]) do
+    send(self(), :after_init)
+
+    {:ok, %{pool_pid: pool_pid, consumers: consumers, settings: settings}}
   end
 
-  def confirm(channel, tag) do
-    GenServer.call(@name, {:confirm, channel, tag})
+  def handle_info(:after_init, %{pool_pid: pool_pid, consumers: consumers, settings: settings}) do
+    rabbitmq_connect(pool_pid, consumers, settings)
   end
 
-  def reject(channel, tag, requeue) do
-    GenServer.call(@name, {:reject, channel, tag, requeue})
+  def confirm(pid, channel, tag) do
+    GenServer.call(pid, {:confirm, channel, tag})
+  end
+
+  def reject(pid, channel, tag, requeue) do
+    GenServer.call(pid, {:reject, channel, tag, requeue})
   end
 
   def publish(exchange_name, message) do
-    GenServer.call(@name, {:publish, exchange_name, message})
+    pid = ApplicationSupervisor.connection_pid()
+
+    GenServer.call(pid, {:publish, exchange_name, message})
   end
 
   def publish(exchange_name, routing_key, message) do
-    GenServer.call(@name, {:publish, exchange_name, routing_key, message})
+    pid = ApplicationSupervisor.connection_pid()
+
+    GenServer.call(pid, {:publish, exchange_name, routing_key, message})
   end
 
-  def publish(channel, exchange_name, routing_key, message) do
-    GenServer.call(@name, {:publish, channel, exchange_name, routing_key, message})
+  def publish(pid, channel, exchange_name, routing_key, message) do
+    GenServer.call(pid, {:publish, channel, exchange_name, routing_key, message})
   end
 
   def handle_call({:confirm, channel, tag}, _from, %{adapter: adapter} = state) do
@@ -67,22 +75,23 @@ defmodule Coney.ConnectionServer do
     {:reply, :published, state}
   end
 
-  defp rabbitmq_connect(consumers, adapter: adapter, settings: settings) do
+  defp rabbitmq_connect(pool_pid, consumers, adapter: adapter, settings: settings) do
     conn = adapter.open(settings)
+    start_consumers(pool_pid, consumers, adapter, conn)
 
-    start_consumers(consumers, adapter, conn)
-
-    {:ok, %{adapter: adapter, pub_chan: adapter.create_channel(conn)}}
+    {:noreply, %{adapter: adapter, pub_chan: adapter.create_channel(conn), pool_pid: pool_pid}}
   end
 
-  defp start_consumers(consumers, adapter, conn) do
+  defp start_consumers(pool_pid, consumers, adapter, conn) do
+    consumer_supervisor_pid = PoolSupervisor.consumer_supervisor_pid(pool_pid)
+
     Enum.each(consumers, fn consumer ->
       subscribe_chan = adapter.create_channel(conn)
       publish_chan = respond_to(adapter, conn, consumer.connection)
 
-      connection = ConsumerConnection.build(subscribe_chan, publish_chan)
+      connection = ConsumerConnection.build(self(), subscribe_chan, publish_chan)
 
-      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, connection)
+      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer_supervisor_pid, consumer, connection)
 
       adapter.subscribe(subscribe_chan, pid, consumer)
     end)
