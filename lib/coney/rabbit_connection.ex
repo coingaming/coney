@@ -1,17 +1,13 @@
 defmodule Coney.RabbitConnection do
-  require Logger
-
   use AMQP
-
-  @behaviour Coney.AMQPConnection
 
   def open(settings = %{url: url, timeout: timeout}) do
     case connect(url) do
       {:ok, conn} ->
         Process.link(conn.pid)
         conn
+
       {:error, _} ->
-         Logger.error "Unable to connect to RabbitMQ, trying reconnect..."
         :timer.sleep(timeout)
         open(settings)
     end

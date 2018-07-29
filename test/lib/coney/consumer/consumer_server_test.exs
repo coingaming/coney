@@ -1,13 +1,14 @@
 defmodule ConsumerServerTest do
   use ExUnit.Case, async: true
 
-  alias Coney.ConsumerServer
-  alias Coney.Test.FakeConsumer
+  alias Coney.{ConsumerServer, ConsumerConnection}
 
   setup do
+    connection = ConsumerConnection.build(nil, :channel, :channel)
+
     [
-      args: [FakeConsumer, :channel],
-      state: %{consumer: FakeConsumer, connection: :channel}
+      args: [FakeConsumer, connection],
+      state: %{consumer: FakeConsumer, connection: connection}
     ]
   end
 
@@ -16,19 +17,23 @@ defmodule ConsumerServerTest do
   end
 
   test ":basic_consume_ok", %{state: state} do
-    assert {:noreply, ^state} = ConsumerServer.handle_info({:basic_consume_ok, %{consumer_tag: nil}}, state)
+    assert {:noreply, ^state} =
+             ConsumerServer.handle_info({:basic_consume_ok, %{consumer_tag: nil}}, state)
   end
 
   test ":basic_cancel", %{state: state} do
-    assert {:stop, :normal, ^state} = ConsumerServer.handle_info({:basic_cancel, %{consumer_tag: nil}}, state)
+    assert {:stop, :normal, ^state} =
+             ConsumerServer.handle_info({:basic_cancel, %{consumer_tag: nil}}, state)
   end
 
   test ":basic_cancel_ok", %{state: state} do
-    assert {:noreply, ^state} = ConsumerServer.handle_info({:basic_cancel_ok, %{consumer_tag: nil}}, state)
+    assert {:noreply, ^state} =
+             ConsumerServer.handle_info({:basic_cancel_ok, %{consumer_tag: nil}}, state)
   end
 
   test ":basic_deliver", %{state: state} do
-    message = {:basic_deliver, :payload, %{delivery_tag: :tag, redelivered: :redelivered, routing_key: ""}}
+    message =
+      {:basic_deliver, :ok, %{delivery_tag: :tag, redelivered: :redelivered, routing_key: ""}}
 
     assert {:noreply, ^state} = ConsumerServer.handle_info(message, state)
   end

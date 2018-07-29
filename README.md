@@ -12,7 +12,7 @@ Add Coney as a dependency in your `mix.exs` file.
 
 ```elixir
 def deps do
-  [{:coney, "~> 0.4"}]
+  [{:coney, "~> 1.0"}]
 end
 ```
 
@@ -23,17 +23,17 @@ After you are done, run `mix deps.get` in your shell to fetch and compile Coney.
 ```elixir
 # config/config.exs
 
-config :coney, Coney.AMQPConnection, [
+config :coney,
   adapter: Coney.RabbitConnection,
+  pool_size: 1,
   settings: %{
     url: "amqp://guest:guest@localhost", # or ["amqp://guest:guest@localhost", "amqp://guest:guest@other_host"]
     timeout: 1000
   }
-]
 
 # config/test.exs
 
-config :coney, Coney.AMQPConnection, adapter: Coney.Test.FakeConnection, settings: %{}
+config :coney, adapter: Coney.FakeConnection, settings: %{}
 
 # lib/my_application.ex
 
@@ -61,6 +61,8 @@ children = [
 # web/consumers/my_consumer.ex
 
 defmodule MyApplication.MyConsumer do
+  @behaviour Coney.Consumer
+
   def connection do
     %{
       prefetch_count: 10,
@@ -70,37 +72,37 @@ defmodule MyApplication.MyConsumer do
     }
   end
 
-  def parse(payload) do
+  def parse(payload, _meta) do
     String.to_integer(payload)
   end
 
-  def process(number) do
+  def process(number, _meta) do
     if number <= 10 do
-      {:ok, "Work done"}
+      :ok
     else
-      {:error, "Number should be less than 10"}
+      :reject
     end
   end
-  
-  def error_happened(exception, payload) do
-    IO.inspect System.stacktrace()
+
+  def error_happened(exception, payload, _meta) do
+    IO.inspect __STACKTRACE__
     IO.puts "Exception raised with #{ payload }"
+    :redeliver
   end
 end
 ```
 
 
-### .process return format
+### .process/2 and .error_happened/3 return format
 
-1. `{:ok, any}` - message will be marked as performed.
-1. `{:error, reason}` - message will be returned to queue once.
-1. `{:reject, reason}` - message will be rejected.
-1. `{:reply, any}` - response will be published to reply exchange.
-1. `{:redeliver, any}` - response will be returned to queue.
+1. `:ok` - ack message.
+1. `:reject` - reject message.
+1. `:redeliver` - return message to the queue.
+1. `{:reply, binary}` - response will be published to reply exchange.
 
 ### Reply description
 
-To use `{:reply, response}` you should add response exchange in `connection`:
+To use `{:reply, binary}` you should add response exchange in `connection`:
 
 ```elixir
 # web/consumers/my_consumer.ex
@@ -113,7 +115,7 @@ def connection do
 end
 ```
 
-Response will be serialized to JSON and publish to `"response_exchange"` exchange.
+Response will be published to `"response_exchange"` exchange.
 
 ### Publish message
 

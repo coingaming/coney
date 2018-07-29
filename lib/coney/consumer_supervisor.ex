@@ -1,12 +1,8 @@
 defmodule Coney.ConsumerSupervisor do
-  require Logger
-
   use Supervisor
 
-  @name __MODULE__
-
   def start_link do
-    Supervisor.start_link(@name, [], name: @name)
+    Supervisor.start_link(__MODULE__, [])
   end
 
   def init([]) do
@@ -17,7 +13,7 @@ defmodule Coney.ConsumerSupervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def start_consumer(consumer, connection) do
-    Supervisor.start_child(@name, [consumer, connection])
+  def start_consumer(pid, consumer, connection) do
+    Supervisor.start_child(pid, [consumer, connection])
   end
 end
