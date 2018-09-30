@@ -110,7 +110,7 @@ To use `{:reply, binary}` you should add response exchange in `connection`:
 def connection do
   %{
     # ...
-    respond_to: {:fanout, "response_exchange", durable: true}
+    respond_to: "response_exchange"
   }
 end
 ```

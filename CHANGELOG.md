@@ -1,3 +1,11 @@
+## [1.1.0]
+
+### Changes
+
+Create new channel per each publish message.
+
+- Change value of `respond_to` field in connection specification to string with exchange name
+
 ## [1.0.0]
 
 ### Changes
