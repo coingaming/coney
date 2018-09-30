@@ -31,7 +31,7 @@ defmodule Coney.ApplicationSupervisor do
     Application.get_env(:coney, :pool_size, 1)
   end
 
-  def connection_pid do
+  def connection_server_pid do
     {_, pid, _, _} =
       __MODULE__
       |> Supervisor.which_children()

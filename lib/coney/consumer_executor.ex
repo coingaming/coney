@@ -38,38 +38,42 @@ defmodule Coney.ConsumerExecutor do
     end
   end
 
-  defp ack(%ConsumerConnection{connection_pid: pid, subscribe_channel: channel}, %ExecutionTask{
-         tag: tag
-       }) do
+  defp ack(
+         %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel},
+         %ExecutionTask{
+           tag: tag
+         }
+       ) do
     ConnectionServer.confirm(pid, channel, tag)
   end
 
-  defp reply(consumer, response, connection, task) do
+  defp reply(%{connection: %{respond_to: exchange_name}}, response, connection, task) do
     ack(connection, task)
-
-    exchange_name = elem(consumer.connection.respond_to, 1)
     send_message(connection, exchange_name, response)
   end
 
   defp redeliver(
-         %ConsumerConnection{connection_pid: pid, subscribe_channel: channel},
+         %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel},
          %ExecutionTask{tag: tag}
        ) do
     ConnectionServer.reject(pid, channel, tag, true)
   end
 
-  defp reject(%ConsumerConnection{connection_pid: pid, subscribe_channel: channel}, %ExecutionTask{
-         tag: tag
-       }) do
+  defp reject(
+         %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel},
+         %ExecutionTask{
+           tag: tag
+         }
+       ) do
     ConnectionServer.reject(pid, channel, tag, false)
   end
 
   defp send_message(
-         %ConsumerConnection{connection_pid: pid, publish_channel: channel},
+         %ConsumerConnection{connection_server_pid: pid},
          exchange,
          {routing_key, response}
        ) do
-    ConnectionServer.publish(pid, channel, exchange, routing_key, response)
+    ConnectionServer.publish(pid, exchange, routing_key, response)
   end
 
   defp send_message(connection, exchange, response) do

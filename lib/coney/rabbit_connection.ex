@@ -58,12 +58,14 @@ defmodule Coney.RabbitConnection do
     name
   end
 
-  def respond_to(chan, exchange) do
-    declare_exchange(chan, exchange)
-  end
+  def publish(conn, exchange_name, routing_key, message) do
+    chan = create_channel(conn)
 
-  def publish(chan, exchange_name, routing_key, message) do
-    Basic.publish(chan, exchange_name, routing_key, message)
+    try do
+      Basic.publish(chan, exchange_name, routing_key, message)
+    after
+      Channel.close(chan)
+    end
   end
 
   def confirm(channel, tag) do
