@@ -17,7 +17,7 @@ defmodule Coney.ApplicationSupervisor do
   end
 
   defp pool_supervisor(i, consumers, settings) do
-    {PoolSupervisor, [consumers, settings], id: "coney.pool.#{i}"}
+    supervisor(PoolSupervisor, [consumers, settings], id: "coney.pool.#{i}")
   end
 
   def settings do
