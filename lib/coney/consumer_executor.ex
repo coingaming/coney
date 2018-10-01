@@ -2,53 +2,58 @@ defmodule Coney.ConsumerExecutor do
   alias Coney.{ConnectionServer, ExecutionTask, ConsumerConnection}
 
   def consume(
-        %ExecutionTask{consumer: consumer, connection: connection, payload: payload, meta: meta} =
-          task
+        %ExecutionTask{
+          consumer: consumer,
+          settings: settings,
+          connection: connection,
+          payload: payload,
+          meta: meta
+        } = task
       ) do
     try do
       payload
       |> consumer.parse(meta)
       |> consumer.process(meta)
-      |> handle_result(consumer, connection, task)
+      |> handle_result(task)
     rescue
       exception ->
         if function_exported?(consumer, :error_happened, 3) do
           exception
           |> consumer.error_happened(payload, meta)
-          |> handle_result(consumer, connection, task)
+          |> handle_result(task)
         else
           reject(connection, task)
         end
     end
   end
 
-  defp handle_result(result, consumer, connection, task) do
+  defp handle_result(result, %ExecutionTask{consumer: consumer, settings: settings, connection: connection} = task) do
     case result do
       :ok ->
-        ack(connection, task)
+        ack(task)
 
       :reject ->
-        reject(connection, task)
+        reject(task)
 
       :redeliver ->
-        redeliver(connection, task)
+        redeliver(task)
 
       {:reply, response} ->
-        reply(consumer, response, connection, task)
+        reply(settings, response, task)
     end
   end
 
   defp ack(
-         %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel},
          %ExecutionTask{
-           tag: tag
+           tag: tag,
+           connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
          }
        ) do
     ConnectionServer.confirm(pid, channel, tag)
   end
 
-  defp reply(%{connection: %{respond_to: exchange_name}}, response, connection, task) do
-    ack(connection, task)
+  defp reply(%{respond_to: exchange_name}, response, %ExecutionTask{connection: connection} = task) do
+    ack(task)
     send_message(connection, exchange_name, response)
   end
 

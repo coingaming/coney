@@ -3,7 +3,7 @@ defmodule Coney.Application do
 
   def start(_type, _args) do
     children = [
-      {Coney.ApplicationSupervisor, [Application.get_env(:coney, :workers, [])]}
+      {Coney.ApplicationSupervisor, Application.get_env(:coney, :workers, [])}
     ]
 
     opts = [strategy: :one_for_one, name: Coney.Supervisor]

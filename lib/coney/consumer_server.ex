@@ -7,10 +7,6 @@ defmodule Coney.ConsumerServer do
     GenServer.start_link(__MODULE__, [consumer, connection])
   end
 
-  def init([%{worker: consumer}, connection]) do
-    {:ok, %{consumer: consumer, connection: connection}}
-  end
-
   def init([consumer, connection]) do
     {:ok, %{consumer: consumer, connection: connection}}
   end

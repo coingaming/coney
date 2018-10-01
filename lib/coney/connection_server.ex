@@ -95,7 +95,6 @@ defmodule Coney.ConnectionServer do
       connection = ConsumerConnection.build(self(), subscribe_chan)
 
       {:ok, pid} = ConsumerSupervisor.start_consumer(consumer_supervisor_pid, consumer, connection)
-
       adapter.subscribe(subscribe_chan, pid, consumer)
     end)
   end
