@@ -3,7 +3,6 @@
 [![Hex Version](http://img.shields.io/hexpm/v/coney.svg)](https://hex.pm/packages/coney)
 [![Build Status](https://travis-ci.org/llxff/coney.svg?branch=master)](https://travis-ci.org/llxff/coney)
 
-
 Simple consumer server for the RabbitMQ.
 
 ## Usage
@@ -22,30 +21,18 @@ After you are done, run `mix deps.get` in your shell to fetch and compile Coney.
 
 ```elixir
 # config/config.exs
-
 config :coney,
   adapter: Coney.RabbitConnection,
   pool_size: 1,
   settings: %{
     url: "amqp://guest:guest@localhost", # or ["amqp://guest:guest@localhost", "amqp://guest:guest@other_host"]
     timeout: 1000
-  }
-
-# config/test.exs
-
-config :coney, adapter: Coney.FakeConnection, settings: %{}
-
-# lib/my_application.ex
-
-children = [
-  # ...
-  supervisor(Coney.ApplicationSupervisor, [[MyApplication.MyConsumer]])
-]
-
+  },
+  workers: [
+    MyApplication.MyConsumer
+  ]
 # or
-children = [
-  # ...
-  supervisor(Coney.ApplicationSupervisor, [[
+  workers: [
     %{
       connection: %{
         prefetch_count: 10,
@@ -55,9 +42,16 @@ children = [
       },
       worker: MyApplication.MyConsumer
     }
-  ]])
-]
+  ]
+```
 
+```elixir
+# config/test.exs
+
+config :coney, adapter: Coney.FakeConnection, settings: %{}
+```
+
+```elixir
 # web/consumers/my_consumer.ex
 
 defmodule MyApplication.MyConsumer do
@@ -91,7 +85,6 @@ defmodule MyApplication.MyConsumer do
   end
 end
 ```
-
 
 ### .process/2 and .error_happened/3 return format
 

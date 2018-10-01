@@ -6,6 +6,7 @@ config :coney,
   settings: %{
     url: "amqp://guest:guest@localhost",
     timeout: 1000
-  }
+  },
+  workers: []
 
 import_config "#{Mix.env()}.exs"
