@@ -1,15 +1,7 @@
 defmodule Coney.ConsumerExecutor do
   alias Coney.{ConnectionServer, ExecutionTask, ConsumerConnection}
 
-  def consume(
-        %ExecutionTask{
-          consumer: consumer,
-          settings: settings,
-          connection: connection,
-          payload: payload,
-          meta: meta
-        } = task
-      ) do
+  def consume(%ExecutionTask{consumer: consumer, payload: payload, meta: meta} = task) do
     try do
       payload
       |> consumer.parse(meta)
@@ -22,12 +14,15 @@ defmodule Coney.ConsumerExecutor do
           |> consumer.error_happened(payload, meta)
           |> handle_result(task)
         else
-          reject(connection, task)
+          reject(task)
         end
     end
   end
 
-  defp handle_result(result, %ExecutionTask{consumer: consumer, settings: settings, connection: connection} = task) do
+  defp handle_result(
+         result,
+         %ExecutionTask{consumer: consumer, settings: settings, connection: connection} = task
+       ) do
     case result do
       :ok ->
         ack(task)
@@ -39,37 +34,36 @@ defmodule Coney.ConsumerExecutor do
         redeliver(task)
 
       {:reply, response} ->
-        reply(settings, response, task)
+        reply(task, response)
     end
   end
 
-  defp ack(
-         %ExecutionTask{
-           tag: tag,
-           connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
-         }
-       ) do
+  defp ack(%ExecutionTask{
+         tag: tag,
+         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
+       }) do
     ConnectionServer.confirm(pid, channel, tag)
   end
 
-  defp reply(%{respond_to: exchange_name}, response, %ExecutionTask{connection: connection} = task) do
+  defp reply(
+         %ExecutionTask{connection: connection, settings: %{respond_to: exchange_name}} = task,
+         response
+       ) do
     ack(task)
     send_message(connection, exchange_name, response)
   end
 
-  defp redeliver(
-         %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel},
-         %ExecutionTask{tag: tag}
-       ) do
+  defp redeliver(%ExecutionTask{
+         tag: tag,
+         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
+       }) do
     ConnectionServer.reject(pid, channel, tag, true)
   end
 
-  defp reject(
-         %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel},
-         %ExecutionTask{
-           tag: tag
-         }
-       ) do
+  defp reject(%ExecutionTask{
+         tag: tag,
+         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
+       }) do
     ConnectionServer.reject(pid, channel, tag, false)
   end
 
