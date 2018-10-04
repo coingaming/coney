@@ -2,41 +2,28 @@ defmodule Coney.ConsumerExecutor do
   alias Coney.{ConnectionServer, ExecutionTask, ConsumerConnection}
 
   def consume(%ExecutionTask{consumer: consumer, payload: payload, meta: meta} = task) do
-    try do
-      payload
-      |> consumer.parse(meta)
-      |> consumer.process(meta)
-      |> handle_result(task)
-    rescue
-      exception ->
-        if function_exported?(consumer, :error_happened, 3) do
-          exception
-          |> consumer.error_happened(payload, meta)
-          |> handle_result(task)
-        else
-          reject(task)
-        end
-    end
-  end
-
-  defp handle_result(
-         result,
-         %ExecutionTask{consumer: consumer, settings: settings, connection: connection} = task
-       ) do
-    case result do
-      :ok ->
-        ack(task)
-
-      :reject ->
+    payload
+    |> consumer.parse(meta)
+    |> consumer.process(meta)
+    |> handle_result(task)
+  rescue
+    exception ->
+      if function_exported?(consumer, :error_happened, 3) do
+        exception
+        |> consumer.error_happened(payload, meta)
+        |> handle_result(task)
+      else
         reject(task)
-
-      :redeliver ->
-        redeliver(task)
-
-      {:reply, response} ->
-        reply(task, response)
-    end
+      end
   end
+
+  defp handle_result(:ok, task), do: ack(task)
+
+  defp handle_result(:reject, task), do: reject(task)
+
+  defp handle_result(:redeliver, task), do: redeliver(task)
+
+  defp handle_result({:reply, response}, task), do: reply(task, response)
 
   defp ack(%ExecutionTask{
          tag: tag,
