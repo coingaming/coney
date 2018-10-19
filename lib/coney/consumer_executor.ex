@@ -1,75 +1,65 @@
 defmodule Coney.ConsumerExecutor do
   alias Coney.{ConnectionServer, ExecutionTask, ConsumerConnection}
 
-  def consume(
-        %ExecutionTask{consumer: consumer, connection: connection, payload: payload, meta: meta} =
-          task
-      ) do
-    try do
-      payload
-      |> consumer.parse(meta)
-      |> consumer.process(meta)
-      |> handle_result(consumer, connection, task)
-    rescue
-      exception ->
-        if function_exported?(consumer, :error_happened, 3) do
-          exception
-          |> consumer.error_happened(payload, meta)
-          |> handle_result(consumer, connection, task)
-        else
-          reject(connection, task)
-        end
-    end
+  def consume(%ExecutionTask{consumer: consumer, payload: payload, meta: meta} = task) do
+    payload
+    |> consumer.parse(meta)
+    |> consumer.process(meta)
+    |> handle_result(task)
+  rescue
+    exception ->
+      if function_exported?(consumer, :error_happened, 3) do
+        exception
+        |> consumer.error_happened(payload, meta)
+        |> handle_result(task)
+      else
+        reject(task)
+      end
   end
 
-  defp handle_result(result, consumer, connection, task) do
-    case result do
-      :ok ->
-        ack(connection, task)
+  defp handle_result(:ok, task), do: ack(task)
 
-      :reject ->
-        reject(connection, task)
+  defp handle_result(:reject, task), do: reject(task)
 
-      :redeliver ->
-        redeliver(connection, task)
+  defp handle_result(:redeliver, task), do: redeliver(task)
 
-      {:reply, response} ->
-        reply(consumer, response, connection, task)
-    end
-  end
+  defp handle_result({:reply, response}, task), do: reply(task, response)
 
-  defp ack(%ConsumerConnection{connection_pid: pid, subscribe_channel: channel}, %ExecutionTask{
-         tag: tag
+  defp ack(%ExecutionTask{
+         tag: tag,
+         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
        }) do
     ConnectionServer.confirm(pid, channel, tag)
   end
 
-  defp reply(consumer, response, connection, task) do
-    ack(connection, task)
-
-    exchange_name = elem(consumer.connection.respond_to, 1)
+  defp reply(
+         %ExecutionTask{connection: connection, settings: %{respond_to: exchange_name}} = task,
+         response
+       ) do
+    ack(task)
     send_message(connection, exchange_name, response)
   end
 
-  defp redeliver(
-         %ConsumerConnection{connection_pid: pid, subscribe_channel: channel},
-         %ExecutionTask{tag: tag}
-       ) do
+  defp redeliver(%ExecutionTask{
+         tag: tag,
+         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
+       }) do
     ConnectionServer.reject(pid, channel, tag, true)
   end
 
-  defp reject(%ConsumerConnection{connection_pid: pid, subscribe_channel: channel}, %ExecutionTask{
-         tag: tag
+  defp reject(%ExecutionTask{
+         tag: tag,
+         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
        }) do
     ConnectionServer.reject(pid, channel, tag, false)
   end
 
   defp send_message(
-         %ConsumerConnection{connection_pid: pid, publish_channel: channel},
+         %ConsumerConnection{connection_server_pid: pid},
          exchange,
          {routing_key, response}
        ) do
-    ConnectionServer.publish(pid, channel, exchange, routing_key, response)
+    ConnectionServer.publish(pid, exchange, routing_key, response)
   end
 
   defp send_message(connection, exchange, response) do

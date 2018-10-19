@@ -3,19 +3,19 @@ defmodule Coney.FakeConnection do
     :conn
   end
 
-  def create_channel(:conn) do
+  def create_channel(_) do
     :chan
   end
 
-  def subscribe(:chan, _, _) do
+  def subscribe(_, _, _) do
     {:ok, :subscribed}
   end
 
-  def respond_to(:chan, _exchange) do
+  def respond_to(_, _) do
     nil
   end
 
-  def publish(:chan, _exchange, _routing_key, _message) do
+  def publish(_, _, _, _) do
     :published
   end
 

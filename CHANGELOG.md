@@ -1,3 +1,13 @@
+## [2.0.0]
+
+### Changes
+
+Create new channel per each publish message.
+
+- Change value of `respond_to` field in connection specification to string with exchange name
+- No need to add Coney to your application supervisor tree
+- Consumers should be described in `worker` config parameter
+
 ## [1.0.0]
 
 ### Changes

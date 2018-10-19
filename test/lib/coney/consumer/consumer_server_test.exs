@@ -4,7 +4,7 @@ defmodule ConsumerServerTest do
   alias Coney.{ConsumerServer, ConsumerConnection}
 
   setup do
-    connection = ConsumerConnection.build(nil, :channel, :channel)
+    connection = ConsumerConnection.build(nil, :channel)
 
     [
       args: [FakeConsumer, connection],
