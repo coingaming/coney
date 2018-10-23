@@ -38,7 +38,7 @@ config :coney,
         prefetch_count: 10,
         exchange:       {:direct, "my_exchange", durable: true},
         queue:          {"my_queue", durable: true},
-        binding:        [routing_key: "routnig_key"]
+        binding:        [routing_key: "routing_key"]
       },
       worker: MyApplication.MyConsumer
     }
