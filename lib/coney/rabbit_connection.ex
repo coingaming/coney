@@ -63,7 +63,7 @@ defmodule Coney.RabbitConnection do
     name
   end
 
-  defp bind_queue(_, :default_exchange, _, _), do :ok
+  defp bind_queue(_, :default_exchange, _, _), do: :ok
 
   defp bind_queue(chan, exchange_name, queue, options) do
     Queue.bind(chan, queue, exchange_name, options)
