@@ -55,7 +55,6 @@ defmodule Coney.RabbitConnection do
   end
 
   defp declare_exchange(_, {:direct, "", _}), do: :default_exchange
-  defp declare_exchange(_, nil), do: :default_exchange
   defp declare_exchange(_, :default), do: :default_exchange
 
   defp declare_exchange(chan, {type, name, params}) do
