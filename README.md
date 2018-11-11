@@ -110,9 +110,9 @@ end
 
 Response will be published to `"response_exchange"` exchange.
 
-### Default exchange
+### The default exchange
 
-To use default exchange you should set `connection.exchange` to `:default` parameter:
+To use the default exchange you should set `connection.exchange` to `:default` parameter:
 
 ```elixir
 # web/consumers/my_consumer.ex
