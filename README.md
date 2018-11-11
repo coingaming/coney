@@ -112,7 +112,7 @@ Response will be published to `"response_exchange"` exchange.
 
 ### Default exchange
 
-To use default exchange setup `connection.exchange` to `:default` parameter:
+To use default exchange you should set `connection.exchange` to `:default` parameter:
 
 ```elixir
 # web/consumers/my_consumer.ex
@@ -124,10 +124,7 @@ def connection do
   }
 end
 ```
-
-or you can use the following format:
-
-# or
+The following format is also acceptable:
 
 ```elixir
 def connection do
