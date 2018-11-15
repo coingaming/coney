@@ -17,7 +17,7 @@ defmodule Coney.Mixfile do
 
   def application do
     [
-      applications: [],
+      extra_applications: [],
       mod: {Coney.Application, []}
     ]
   end
