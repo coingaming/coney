@@ -17,31 +17,31 @@ defmodule RabbitConnectionTest do
       %{chan: chan}
     end
 
-    test "subscribes to default exchange using :default option", %{chan: chan} do
+    test "subscribes to the default exchange using :default option", %{chan: chan} do
       consumer = build_consumer(:default)
 
       assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
     end
 
-    test "subscribes to default exchange using empty string as name", %{chan: chan} do
+    test "subscribes to the default exchange using empty string as name", %{chan: chan} do
       consumer = build_consumer({:direct, ""})
 
       assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
     end
 
-    test "subscribes to direct exchange", %{chan: chan} do
+    test "subscribes to a direct exchange", %{chan: chan} do
       consumer = build_consumer({:direct, rand_name()})
 
       assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
     end
 
-    test "subscribes to fanout exchange", %{chan: chan} do
+    test "subscribes to a fanout exchange", %{chan: chan} do
       consumer = build_consumer({:fanout, rand_name()})
 
       assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
     end
 
-    test "subscribes to topic topic exchange", %{chan: chan} do
+    test "subscribes to a topic exchange", %{chan: chan} do
       consumer = build_consumer({:topic, rand_name()})
 
       assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
