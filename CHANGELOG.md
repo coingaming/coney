@@ -1,3 +1,9 @@
+## [2.0.2]
+
+### Changes
+
+- Added `:default` option for `connection.exchange`
+
 ## [2.0.0]
 
 ### Changes
