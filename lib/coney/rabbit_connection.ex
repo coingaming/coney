@@ -32,21 +32,13 @@ defmodule Coney.RabbitConnection do
 
     Basic.qos(chan, prefetch_count: connection.prefetch_count)
 
-    exchange_name = declare_exchange(chan, connection.exchange)
     queue = declare_queue(chan, connection.queue)
 
-    Queue.bind(chan, queue, exchange_name, Map.get(connection, :binding, []))
+    exchange_name = declare_exchange(chan, Map.get(connection, :exchange, nil))
+
+    bind_queue(chan, exchange_name, queue, Map.get(connection, :binding, []))
 
     {:ok, _consumer_tag} = Basic.consume(chan, queue, consumer_pid)
-  end
-
-  defp declare_exchange(chan, {type, name}) do
-    declare_exchange(chan, {type, name, []})
-  end
-
-  defp declare_exchange(chan, {type, name, params}) do
-    Exchange.declare(chan, name, type, params)
-    name
   end
 
   defp declare_queue(chan, {name}) do
@@ -56,6 +48,24 @@ defmodule Coney.RabbitConnection do
   defp declare_queue(chan, {name, params}) do
     Queue.declare(chan, name, params)
     name
+  end
+
+  defp declare_exchange(chan, {type, name}) do
+    declare_exchange(chan, {type, name, []})
+  end
+
+  defp declare_exchange(_, {:direct, "", _}), do: :default_exchange
+  defp declare_exchange(_, :default), do: :default_exchange
+
+  defp declare_exchange(chan, {type, name, params}) do
+    Exchange.declare(chan, name, type, params)
+    name
+  end
+
+  defp bind_queue(_, :default_exchange, _, _), do: :ok
+
+  defp bind_queue(chan, exchange_name, queue, options) do
+    Queue.bind(chan, queue, exchange_name, options)
   end
 
   def publish(conn, exchange_name, routing_key, message) do

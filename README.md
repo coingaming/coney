@@ -110,6 +110,31 @@ end
 
 Response will be published to `"response_exchange"` exchange.
 
+### The default exchange
+
+To use the default exchange you should set `connection.exchange` to `:default` parameter:
+
+```elixir
+# web/consumers/my_consumer.ex
+
+def connection do
+  %{
+    # ...
+    exchange: :default
+  }
+end
+```
+The following format is also acceptable:
+
+```elixir
+def connection do
+  %{
+    # ...
+    exchange: {:direct, ""}
+  }
+end
+```
+
 ### Publish message
 
 ```elixir
