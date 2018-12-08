@@ -9,7 +9,7 @@ Consumer server for RabbitMQ with message publishing functionality.
 
 - [Installation](#installation)
 - [Setup a consumer server](#setup-a-consumer-server)
-  - [.process/2 and .error_happened/3 return format](#.process2-and-.error_happened3-return-format)
+  - [.process/2 and .error_happened/3 return format](#process2-and-error_happened3-return-format)
   - [Reply description](#reply-description)
   - [The default exchange](#the-default-exchange)
 - [Publish message](#publish-message)
