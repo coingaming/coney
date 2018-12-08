@@ -1,3 +1,12 @@
+## [Future version]
+
+### Changes
+
+- Error logs for connection errors
+- Error log for unhandled exceptions if `error_handler` is missing
+- Debug log after connection was established
+- Debug log after consumer was started
+
 ## [2.0.2]
 
 ### Changes
