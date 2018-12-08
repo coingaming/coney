@@ -1,6 +1,8 @@
 defmodule Coney.ConnectionServer do
   use GenServer
 
+  require Logger
+
   alias Coney.{ConsumerSupervisor, ConsumerConnection, PoolSupervisor, ApplicationSupervisor}
 
   defmodule State do
@@ -15,10 +17,6 @@ defmodule Coney.ConnectionServer do
     send(self(), :after_init)
 
     {:ok, %State{pool_pid: pool_pid, consumers: consumers, adapter: adapter, settings: settings}}
-  end
-
-  def handle_info(:after_init, state) do
-    rabbitmq_connect(state)
   end
 
   def confirm(pid, channel, tag) do
@@ -43,6 +41,15 @@ defmodule Coney.ConnectionServer do
 
   def publish(pid, exchange_name, routing_key, message) do
     GenServer.call(pid, {:publish, exchange_name, routing_key, message})
+  end
+
+  def handle_info(:after_init, state) do
+    rabbitmq_connect(state)
+  end
+
+  def handle_info({:DOWN, _, :process, _pid, reason}, state) do
+    Logger.error("#{__MODULE__} (#{inspect(self())}) connection lost: #{inspect(reason)}")
+    rabbitmq_connect(state)
   end
 
   def handle_call({:confirm, channel, tag}, _from, %State{adapter: adapter} = state) do
@@ -96,6 +103,8 @@ defmodule Coney.ConnectionServer do
 
       {:ok, pid} = ConsumerSupervisor.start_consumer(consumer_supervisor_pid, consumer, connection)
       adapter.subscribe(subscribe_chan, pid, consumer)
+
+      Logger.debug("#{consumer} (#{inspect(pid)}) started")
     end)
   end
 end
