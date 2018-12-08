@@ -81,7 +81,6 @@ defmodule MyApplication.MyConsumer do
   # Be careful here, if call of `error_happened` will raise an exception, 
   # message will be not handled properly and may be left unacked in a queue
   def error_happened(exception, payload, _meta) do
-    IO.inspect __STACKTRACE__
     IO.puts "Exception raised with #{ payload }"
     :redeliver
   end
