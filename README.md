@@ -9,7 +9,8 @@ Consumer server for RabbitMQ with message publishing functionality.
 
 - [Installation](#installation)
 - [Setup a consumer server](#setup-a-consumer-server)
-  - [.process/2 and .error_happened/3 return format](#process2-and-error_happened3-return-format)
+  - [Rescuing exceptions](#rescuing-exceptions)
+  - [.process/2 and .error_happened return format](#process2-and-error_happened-return-format)
   - [Reply description](#reply-description)
   - [The default exchange](#the-default-exchange)
 - [Publish message](#publish-message)
@@ -98,7 +99,19 @@ defmodule MyApplication.MyConsumer do
 end
 ```
 
-### .process/2 and .error_happened/3 return format
+### Rescuing exceptions
+
+If exception was happened during calls of `parse` or `process` functions, by default Coney will reject this message. If you want to add additional functionality in order to handle exception in a special manner, you can implement one of `error_happened/3` or `error_happened/4` callbacks. But be careful, if call of `error_happened` will raise an exception, message will be not handled properly and may be left unacked in a queue.
+
+#### error_happened/3
+
+This callback receives `exception`, original `payload` and `meta` as parameters. Response format is the same as in [process callback](#process2-and-error_happened-return-format).
+
+#### error_happened/4
+
+This callback receives `exception`, `stacktrace`, original `payload` and `meta` as parameters. Response format is the same as in [process callback](#process2-and-error_happened-return-format).
+
+### .process/2 and .error_happened return format
 
 1. `:ok` - ack message.
 1. `:reject` - reject message.
