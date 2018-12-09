@@ -23,7 +23,7 @@ Add Coney as a dependency in your `mix.exs` file.
 
 ```elixir
 def deps do
-  [{:coney, "~> 2.0"}]
+  [{:coney, "~> 2.1"}]
 end
 ```
 
