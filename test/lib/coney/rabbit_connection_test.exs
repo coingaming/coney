@@ -6,13 +6,13 @@ defmodule RabbitConnectionTest do
 
   describe "RabbitConnection.subscribe/3" do
     setup do
-      {:ok, conn} = Connection.open
+      {:ok, conn} = Connection.open()
       {:ok, chan} = Channel.open(conn)
 
-      on_exit fn ->
+      on_exit(fn ->
         Channel.close(chan)
         Connection.close(conn)
-      end
+      end)
 
       %{chan: chan}
     end

@@ -1,4 +1,6 @@
 defmodule Coney.ConsumerExecutor do
+  require Logger
+
   alias Coney.{ConnectionServer, ExecutionTask, ConsumerConnection}
 
   def consume(%ExecutionTask{consumer: consumer, payload: payload, meta: meta} = task) do
@@ -18,6 +20,11 @@ defmodule Coney.ConsumerExecutor do
           |> consumer.error_happened(System.stacktrace(), payload, meta)
           |> handle_result(task)
         true ->
+          Logger.error(
+            "#{consumer} (#{inspect(self())}) unhandled exception, message will be rejected: #{
+              inspect(exception)
+            }"
+          )
           reject(task)
       end
   end

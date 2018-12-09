@@ -1,13 +1,21 @@
 defmodule Coney.RabbitConnection do
   use AMQP
 
+  require Logger
+
   def open(settings = %{url: url, timeout: timeout}) do
     case connect(url) do
       {:ok, conn} ->
-        Process.link(conn.pid)
+        Logger.debug("#{__MODULE__} (#{inspect(self())}) connected to #{url}")
+
+        Process.monitor(conn.pid)
         conn
 
-      {:error, _} ->
+      {:error, error} ->
+        Logger.error(
+          "#{__MODULE__} (#{inspect(self())}) connection to #{url} refused: #{inspect(error)}"
+        )
+
         :timer.sleep(timeout)
         open(settings)
     end

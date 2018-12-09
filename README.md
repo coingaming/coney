@@ -3,9 +3,20 @@
 [![Hex Version](http://img.shields.io/hexpm/v/coney.svg)](https://hex.pm/packages/coney)
 [![Build Status](https://travis-ci.org/llxff/coney.svg?branch=master)](https://travis-ci.org/llxff/coney)
 
-Simple consumer server for the RabbitMQ.
+Consumer server for RabbitMQ with message publishing functionality.
 
-## Usage
+## Table of Contents
+
+- [Installation](#installation)
+- [Setup a consumer server](#setup-a-consumer-server)
+  - [.process/2 and .error_happened/3 return format](#process2-and-error_happened3-return-format)
+  - [Reply description](#reply-description)
+  - [The default exchange](#the-default-exchange)
+- [Publish message](#publish-message)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Installation
 
 Add Coney as a dependency in your `mix.exs` file.
 
@@ -17,7 +28,7 @@ end
 
 After you are done, run `mix deps.get` in your shell to fetch and compile Coney.
 
-### Setup a consumer server
+## Setup a consumer server
 
 ```elixir
 # config/config.exs
@@ -78,8 +89,9 @@ defmodule MyApplication.MyConsumer do
     end
   end
 
+  # Be careful here, if call of `error_happened` will raise an exception, 
+  # message will be not handled properly and may be left unacked in a queue
   def error_happened(exception, payload, _meta) do
-    IO.inspect __STACKTRACE__
     IO.puts "Exception raised with #{ payload }"
     :redeliver
   end
@@ -135,7 +147,7 @@ def connection do
 end
 ```
 
-### Publish message
+## Publish message
 
 ```elixir
 Coney.ConnectionServer.publish("exchange", "message")
