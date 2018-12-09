@@ -1,4 +1,4 @@
-## [Future version]
+## [2.1.0]
 
 ### Changes
 
@@ -6,6 +6,7 @@
 - Error log for unhandled exceptions if `error_handler` is missing
 - Debug log after connection was established
 - Debug log after consumer was started
+- `error_happened/4` callback added
 
 ## [2.0.2]
 
