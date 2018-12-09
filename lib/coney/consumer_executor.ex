@@ -8,12 +8,17 @@ defmodule Coney.ConsumerExecutor do
     |> handle_result(task)
   rescue
     exception ->
-      if function_exported?(consumer, :error_happened, 3) do
-        {exception, System.stacktrace()}
-        |> consumer.error_happened(payload, meta)
-        |> handle_result(task)
-      else
-        reject(task)
+      cond do
+        function_exported?(consumer, :error_happened, 3) ->
+          exception
+          |> consumer.error_happened(payload, meta)
+          |> handle_result(task)
+        function_exported?(consumer, :error_happened, 4) ->
+          exception
+          |> consumer.error_happened(System.stacktrace(), payload, meta)
+          |> handle_result(task)
+        true ->
+          reject(task)
       end
   end
 
