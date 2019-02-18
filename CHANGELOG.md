@@ -1,3 +1,9 @@
+## [2.1.1]
+
+### Changes
+
+- Fixed bug with logging of consumer start if worker is defined with map
+
 ## [2.1.0]
 
 ### Changes
