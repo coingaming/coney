@@ -104,7 +104,7 @@ defmodule Coney.ConnectionServer do
       {:ok, pid} = ConsumerSupervisor.start_consumer(consumer_supervisor_pid, consumer, connection)
       adapter.subscribe(subscribe_chan, pid, consumer)
 
-      Logger.debug("#{consumer} (#{inspect(pid)}) started")
+      Logger.debug("#{inspect(consumer)} (#{inspect(pid)}) started")
     end)
   end
 end
