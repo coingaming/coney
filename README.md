@@ -180,7 +180,7 @@ iex> Coney.status()
 [{#PID<0.972.0>, :connected}]
 ```
 
-Here is the list of tuples, where first element in tuple is pid of running connection server and second element is connection status.
+Result is a list of tuples, where first element in tuple is a pid of running connection server and second element describes connection status.
 
 Connection status can be:
 
