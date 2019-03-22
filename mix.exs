@@ -4,7 +4,7 @@ defmodule Coney.Mixfile do
   def project do
     [
       app: :coney,
-      version: "2.1.1",
+      version: "2.2.0",
       elixir: ">= 1.5.0",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -24,7 +24,7 @@ defmodule Coney.Mixfile do
 
   defp deps do
     [
-      {:amqp, "~> 1.0"},
+      {:amqp, "~> 1.1"},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end

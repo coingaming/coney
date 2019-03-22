@@ -6,7 +6,12 @@ defmodule Coney.Consumer do
               :ok | :reject | :redeliver | {:reply, binary()}
   @callback error_happend(exception :: struct(), message :: binary(), meta :: map()) ::
               :ok | :reject | :redeliver | {:reply, binary()}
-  @callback error_happend(exception :: struct(), stacktrace :: stacktrace(), message :: binary(), meta :: map()) ::
+  @callback error_happend(
+              exception :: struct(),
+              stacktrace :: stacktrace(),
+              message :: binary(),
+              meta :: map()
+            ) ::
               :ok | :reject | :redeliver | {:reply, binary()}
 
   @optional_callbacks connection: 0, error_happend: 3, error_happend: 4

@@ -15,16 +15,19 @@ defmodule Coney.ConsumerExecutor do
           exception
           |> consumer.error_happened(payload, meta)
           |> handle_result(task)
+
         function_exported?(consumer, :error_happened, 4) ->
           exception
           |> consumer.error_happened(System.stacktrace(), payload, meta)
           |> handle_result(task)
+
         true ->
           Logger.error(
             "#{consumer} (#{inspect(self())}) unhandled exception, message will be rejected: #{
               inspect(exception)
             }"
           )
+
           reject(task)
       end
   end

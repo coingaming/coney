@@ -3,7 +3,13 @@ defmodule Coney.ConnectionServer do
 
   require Logger
 
-  alias Coney.{ConsumerSupervisor, ConsumerConnection, PoolSupervisor, ApplicationSupervisor}
+  alias Coney.{
+    ConsumerSupervisor,
+    ConsumerConnection,
+    PoolSupervisor,
+    ApplicationSupervisor,
+    ConnectionRegistry
+  }
 
   defmodule State do
     defstruct [:pool_pid, :consumers, :adapter, :settings, :amqp_conn]
@@ -15,6 +21,8 @@ defmodule Coney.ConnectionServer do
 
   def init([pool_pid, consumers, adapter, settings]) do
     send(self(), :after_init)
+
+    ConnectionRegistry.associate(self())
 
     {:ok, %State{pool_pid: pool_pid, consumers: consumers, adapter: adapter, settings: settings}}
   end
@@ -28,15 +36,23 @@ defmodule Coney.ConnectionServer do
   end
 
   def publish(exchange_name, message) do
-    pid = ApplicationSupervisor.connection_server_pid()
+    case ApplicationSupervisor.connection_server_pid() do
+      {:ok, pid} ->
+        GenServer.call(pid, {:publish, exchange_name, message})
 
-    GenServer.call(pid, {:publish, exchange_name, message})
+      error ->
+        error
+    end
   end
 
   def publish(exchange_name, routing_key, message) do
-    pid = ApplicationSupervisor.connection_server_pid()
+    case ApplicationSupervisor.connection_server_pid() do
+      {:ok, pid} ->
+        publish(pid, exchange_name, routing_key, message)
 
-    publish(pid, exchange_name, routing_key, message)
+      error ->
+        error
+    end
   end
 
   def publish(pid, exchange_name, routing_key, message) do
@@ -48,6 +64,7 @@ defmodule Coney.ConnectionServer do
   end
 
   def handle_info({:DOWN, _, :process, _pid, reason}, state) do
+    ConnectionRegistry.disconnected(self())
     Logger.error("#{__MODULE__} (#{inspect(self())}) connection lost: #{inspect(reason)}")
     rabbitmq_connect(state)
   end
@@ -90,6 +107,8 @@ defmodule Coney.ConnectionServer do
        ) do
     conn = adapter.open(settings)
     start_consumers(pool_pid, consumers, adapter, conn)
+
+    ConnectionRegistry.connected(self())
 
     {:noreply, %State{state | amqp_conn: conn}}
   end

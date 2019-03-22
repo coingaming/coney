@@ -1,7 +1,7 @@
 defmodule Coney.ApplicationSupervisor do
   use Supervisor
 
-  alias Coney.{PoolSupervisor, ConnectionServer}
+  alias Coney.{PoolSupervisor, ConnectionRegistry}
 
   def start_link(consumers) do
     Supervisor.start_link(__MODULE__, [consumers], name: __MODULE__)
@@ -10,6 +10,8 @@ defmodule Coney.ApplicationSupervisor do
   def init([consumers]) do
     settings = settings()
     pool_size = pool_size()
+
+    ConnectionRegistry.init()
 
     1..pool_size
     |> Enum.map(&pool_supervisor(&1, consumers, settings))
@@ -32,17 +34,19 @@ defmodule Coney.ApplicationSupervisor do
   end
 
   def connection_server_pid do
-    {_, pid, _, _} =
-      __MODULE__
-      |> Supervisor.which_children()
-      |> Enum.map(fn {_, pid, _, _} -> pid end)
-      |> Enum.random()
-      |> Supervisor.which_children()
-      |> Enum.find(fn
-        {ConnectionServer, _, _, _} -> true
-        _ -> false
-      end)
+    case Enum.random(active_servers()) do
+      pid when is_pid(pid) ->
+        {:ok, pid}
 
-    pid
+      _ ->
+        {:error, :no_connected_servers}
+    end
+  end
+
+  def active_servers do
+    ConnectionRegistry.status()
+    |> Stream.filter(fn {_pid, status} -> status == :connected end)
+    |> Stream.map(fn {pid, _status} -> pid end)
+    |> Enum.to_list()
   end
 end

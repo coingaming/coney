@@ -14,6 +14,7 @@ Consumer server for RabbitMQ with message publishing functionality.
   - [Reply description](#reply-description)
   - [The default exchange](#the-default-exchange)
 - [Publish message](#publish-message)
+- [Checking connections](#checking-connections)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -23,7 +24,7 @@ Add Coney as a dependency in your `mix.exs` file.
 
 ```elixir
 def deps do
-  [{:coney, "~> 2.1"}]
+  [{:coney, "~> 2.2"}]
 end
 ```
 
@@ -43,7 +44,7 @@ config :coney,
   workers: [
     MyApplication.MyConsumer
   ]
-# or
+# also you can define mapping like this and skip it in consumer module:
   workers: [
     %{
       connection: %{
@@ -163,12 +164,29 @@ end
 ## Publish message
 
 ```elixir
-Coney.ConnectionServer.publish("exchange", "message")
+Coney.publish("exchange", "message")
 
 # or
 
-Coney.ConnectionServer.publish("exchange", "routing_key", "message")
+Coney.publish("exchange", "routing_key", "message")
 ```
+
+## Checking connections
+
+You can use`Coney.status/0` if you need to get information about RabbitMQ connections:
+
+```
+iex> Coney.status()
+[{#PID<0.972.0>, :connected}]
+```
+
+Here is the list of tuples, where first element in tuple is pid of running connection server and second element is connection status.
+
+Connection status can be:
+
+- `:pending` - when coney just started
+- `:connected` - when RabbitMQ connection has been established and all consumers have been started
+- `:disconnected` - when coney lost connection to RabbitMQ
 
 ## Contributing
 

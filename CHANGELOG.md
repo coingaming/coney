@@ -1,12 +1,18 @@
 ## [2.1.1]
 
-### Changes
+### Enhancements
+
+- New Coney module with `publish/2`, `publish/3`, `status/0` methods
+
+## [2.1.1]
+
+### Bug fixes
 
 - Fixed bug with logging of consumer start if worker is defined with map
 
 ## [2.1.0]
 
-### Changes
+### Enhancements
 
 - Error logs for connection errors
 - Error log for unhandled exceptions if `error_handler` is missing
@@ -16,15 +22,17 @@
 
 ## [2.0.2]
 
-### Changes
+### Enhancements
 
 - Added `:default` option for `connection.exchange`
 
 ## [2.0.0]
 
-### Changes
+### Enhancements
 
-Create new channel per each publish message.
+- Channel per each publish message.
+
+### Changes
 
 - Change value of `respond_to` field in connection specification to string with exchange name
 - No need to add Coney to your application supervisor tree
@@ -32,20 +40,22 @@ Create new channel per each publish message.
 
 ## [1.0.0]
 
-### Changes
+### Enhancements
 
 - `amqp` updated to version 1.0
 - `poison` removed from dependencies
+- Added `Coney.Consumer` behaviour
+- Added option `pool_size` - number of RabbitMQ connections.
+
+### Changes
 - Changed format of consumer `process/2` and `error_happened/3` functions
 - `error_happened/3` marked as optional
-- Added `Coney.Consumer` behaviour
 - `Coney.AMQPConnection` removed from configs
 - Logging removed
-- Added option `pool_size` - number of RabbitMQ connections.
 
 ## [0.4.3]
 
-### Changes
+### Enhancements
 
 - Allow to define several RabbitMQ hosts for connection (will be used random host from list)
 
@@ -58,9 +68,10 @@ Create new channel per each publish message.
     }
   ]
   ```
+
 ## [0.4.2]
 
-### Changes
+### Enhancements
 
 - `{:reject, reason}` return value:
   Reject message without redelivery.
@@ -84,4 +95,6 @@ Create new channel per each publish message.
     end
   end
   ```
+### Bug fixes
+
 - Fix warnings about undefined behaviour function publish/2, publish/3
