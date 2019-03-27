@@ -1,4 +1,4 @@
-defmodule Coney.ConnectionRegistry do
+defmodule Coney.HealthCheck.ConnectionRegistry do
   def init do
     :ets.new(__MODULE__, [:set, :named_table, :public, read_concurrency: true])
   end
@@ -13,6 +13,10 @@ defmodule Coney.ConnectionRegistry do
 
   def disconnected(pid) do
     :ets.update_element(__MODULE__, pid, {2, :disconnected})
+  end
+
+  def terminated(pid) do
+    :ets.delete(__MODULE__, pid)
   end
 
   def status do

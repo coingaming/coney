@@ -3,6 +3,7 @@ defmodule Coney.Application do
 
   def start(_type, _args) do
     children = [
+      {Coney.HealthCheck.StatusChecker, []},
       {Coney.ApplicationSupervisor, Application.get_env(:coney, :workers, [])}
     ]
 

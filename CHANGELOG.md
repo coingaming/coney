@@ -1,3 +1,9 @@
+## [2.2.1]
+
+### Bug fixes
+
+- Fixed bug when connection server's pid remained in the list of connections after death
+
 ## [2.2.0]
 
 ### Enhancements

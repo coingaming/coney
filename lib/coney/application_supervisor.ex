@@ -1,7 +1,7 @@
 defmodule Coney.ApplicationSupervisor do
   use Supervisor
 
-  alias Coney.{PoolSupervisor, ConnectionRegistry}
+  alias Coney.{PoolSupervisor, HealthCheck.ConnectionRegistry}
 
   def start_link(consumers) do
     Supervisor.start_link(__MODULE__, [consumers], name: __MODULE__)
@@ -10,8 +10,6 @@ defmodule Coney.ApplicationSupervisor do
   def init([consumers]) do
     settings = settings()
     pool_size = pool_size()
-
-    ConnectionRegistry.init()
 
     1..pool_size
     |> Enum.map(&pool_supervisor(&1, consumers, settings))

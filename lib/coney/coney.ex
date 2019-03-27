@@ -1,5 +1,5 @@
 defmodule Coney do
-  alias Coney.{ConnectionServer, ConnectionRegistry}
+  alias Coney.{ConnectionServer, HealthCheck.ConnectionRegistry}
 
   @spec publish(String.t(), String.t()) :: :published | {:error, :no_connected_servers}
   def publish(exchange_name, message) do

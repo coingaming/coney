@@ -8,7 +8,7 @@ defmodule Coney.ConnectionServer do
     ConsumerConnection,
     PoolSupervisor,
     ApplicationSupervisor,
-    ConnectionRegistry
+    HealthCheck.ConnectionRegistry
   }
 
   defmodule State do
@@ -67,6 +67,10 @@ defmodule Coney.ConnectionServer do
     ConnectionRegistry.disconnected(self())
     Logger.error("#{__MODULE__} (#{inspect(self())}) connection lost: #{inspect(reason)}")
     rabbitmq_connect(state)
+  end
+
+  def terminate(_reason, _state) do
+    ConnectionRegistry.terminated(self())
   end
 
   def handle_call({:confirm, channel, tag}, _from, %State{adapter: adapter} = state) do
