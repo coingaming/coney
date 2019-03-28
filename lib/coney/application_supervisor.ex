@@ -7,6 +7,13 @@ defmodule Coney.ApplicationSupervisor do
     Supervisor.start_link(__MODULE__, [consumers], name: __MODULE__)
   end
 
+  def child_spec(_args) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [Application.get_env(:coney, :workers, [])]}
+    }
+  end
+
   def init([consumers]) do
     settings = settings()
     pool_size = pool_size()
@@ -23,7 +30,7 @@ defmodule Coney.ApplicationSupervisor do
   def settings do
     [
       adapter: Application.get_env(:coney, :adapter),
-      settings: Application.get_env(:coney, :settings)
+      settings: connection_settings()
     ]
   end
 
@@ -46,5 +53,20 @@ defmodule Coney.ApplicationSupervisor do
     |> Stream.filter(fn {_pid, status} -> status == :connected end)
     |> Stream.map(fn {pid, _status} -> pid end)
     |> Enum.to_list()
+  end
+
+  defp connection_settings do
+    settings = Application.get_env(:coney, :settings)
+
+    cond do
+      is_map(settings) ->
+        settings
+
+      is_atom(settings) ->
+        settings.rabbitmq_settings()
+
+      true ->
+        raise "Please, specify connection settings via config file or module"
+    end
   end
 end

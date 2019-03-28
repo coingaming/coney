@@ -3,7 +3,7 @@ defmodule Coney.RabbitConnection do
 
   require Logger
 
-  def open(settings = %{url: url, timeout: timeout}) do
+  def open(%{url: url, timeout: timeout} = settings) do
     case connect(url) do
       {:ok, conn} ->
         Logger.debug("#{__MODULE__} (#{inspect(self())}) connected to #{url}")

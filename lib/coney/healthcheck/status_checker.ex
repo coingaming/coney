@@ -5,8 +5,15 @@ defmodule Coney.HealthCheck.StatusChecker do
 
   @interval 500
 
-  def start_link(_args) do
+  def start_link do
     GenServer.start_link(__MODULE__, [])
+  end
+
+  def child_spec(_args) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, []}
+    }
   end
 
   def init(_args) do
