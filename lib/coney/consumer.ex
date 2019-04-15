@@ -4,9 +4,9 @@ defmodule Coney.Consumer do
   @callback parse(message :: binary(), meta :: map()) :: any
   @callback process(payload :: any, meta :: map()) ::
               :ok | :reject | :redeliver | {:reply, binary()}
-  @callback error_happend(exception :: struct(), message :: binary(), meta :: map()) ::
+  @callback error_happened(exception :: struct(), message :: binary(), meta :: map()) ::
               :ok | :reject | :redeliver | {:reply, binary()}
-  @callback error_happend(
+  @callback error_happened(
               exception :: struct(),
               stacktrace :: stacktrace(),
               message :: binary(),
