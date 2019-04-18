@@ -3,27 +3,34 @@ defmodule Coney.RabbitConnection do
 
   require Logger
 
-  def open(settings = %{url: url, timeout: timeout}) do
-    case connect(url) do
+  @timeout 1000
+
+  def open(settings) do
+    case connect(settings) do
       {:ok, conn} ->
-        Logger.debug("#{__MODULE__} (#{inspect(self())}) connected to #{url}")
+        Logger.debug("#{__MODULE__} (#{inspect(self())}) connected to server")
 
         Process.monitor(conn.pid)
         conn
 
       {:error, error} ->
         Logger.error(
-          "#{__MODULE__} (#{inspect(self())}) connection to #{url} refused: #{inspect(error)}"
+          "#{__MODULE__} (#{inspect(self())}) connection to server refused: #{inspect(error)}"
         )
 
-        :timer.sleep(timeout)
+        :timer.sleep(@timeout)
         open(settings)
     end
   end
 
-  defp connect(url) do
+  defp connect(%{url: url}) do
     url
     |> choose_server()
+    |> Connection.open()
+  end
+  defp connect(settings = %{}) do
+    settings
+    |> Enum.into([])
     |> Connection.open()
   end
 
