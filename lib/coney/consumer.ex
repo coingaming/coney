@@ -14,5 +14,5 @@ defmodule Coney.Consumer do
             ) ::
               :ok | :reject | :redeliver | {:reply, binary()}
 
-  @optional_callbacks connection: 0, error_happend: 3, error_happend: 4
+  @optional_callbacks connection: 0, error_happened: 3, error_happened: 4
 end
