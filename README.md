@@ -75,7 +75,7 @@ defmodule MyApplication.MyConsumer do
       prefetch_count: 10,
       exchange:       {:direct, "my_exchange", durable: true},
       queue:          {"my_queue", durable: true},
-      binding:        [routing_key: "routnig_key"]
+      binding:        [routing_key: "routing_key"]
     }
   end
 
@@ -91,7 +91,7 @@ defmodule MyApplication.MyConsumer do
     end
   end
 
-  # Be careful here, if call of `error_happened` will raise an exception, 
+  # Be careful here, if call of `error_happened` will raise an exception,
   # message will be not handled properly and may be left unacked in a queue
   def error_happened(exception, payload, _meta) do
     IO.puts "Exception raised with #{ payload }"
