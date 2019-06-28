@@ -7,16 +7,21 @@ Consumer server for RabbitMQ with message publishing functionality.
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Setup a consumer server](#setup-a-consumer-server)
-  - [Rescuing exceptions](#rescuing-exceptions)
-  - [.process/2 and .error_happened return format](#process2-and-error_happened-return-format)
-  - [Reply description](#reply-description)
-  - [The default exchange](#the-default-exchange)
-- [Publish message](#publish-message)
-- [Checking connections](#checking-connections)
-- [Contributing](#contributing)
-- [License](#license)
+- [Coney](#Coney)
+  - [Table of Contents](#Table-of-Contents)
+  - [Installation](#Installation)
+  - [Setup a consumer server](#Setup-a-consumer-server)
+  - [Configure consumers](#Configure-consumers)
+    - [Rescuing exceptions](#Rescuing-exceptions)
+      - [error_happened/3](#errorhappened3)
+      - [error_happened/4](#errorhappened4)
+    - [.process/2 and .error_happened return format](#process2-and-errorhappened-return-format)
+    - [Reply description](#Reply-description)
+    - [The default exchange](#The-default-exchange)
+  - [Publish message](#Publish-message)
+  - [Checking connections](#Checking-connections)
+  - [Contributing](#Contributing)
+  - [License](#License)
 
 ## Installation
 
@@ -32,15 +37,73 @@ After you are done, run `mix deps.get` in your shell to fetch and compile Coney.
 
 ## Setup a consumer server
 
+Default config:
+
 ```elixir
 # config/config.exs
 config :coney,
   adapter: Coney.RabbitConnection,
   pool_size: 1,
+  auto_start: true,
   settings: %{
     url: "amqp://guest:guest@localhost", # or ["amqp://guest:guest@localhost", "amqp://guest:guest@other_host"]
     timeout: 1000
-  },
+  }
+```
+
+```elixir
+# config/test.exs
+
+config :coney, auto_start: false
+```
+
+Also, you can create a confuguration module (if you want to retreive settings from Consul or something else):
+
+```elixir
+# config/config.exs
+config :coney,
+  adapter: Coney.RabbitConnection,
+  pool_size: 1,
+  auto_start: true,
+  settings: RabbitConfig
+```
+
+```elixir
+defmodule RabbitConfig do
+  def rabbitmq_settings do
+    %{
+      url: "amqp://guest:guest@localhost",
+      timeout: 1000
+    }
+  end
+end
+```
+
+If you don't want to automatically start Coney and want to control it's start, you can set `auto_start` to `false` and add Coney supervisor into yours:
+
+
+```elixir
+# config/config.exs
+config :coney, auto_start: false
+```
+
+```elixir
+
+defmodule YourApplication do
+  use Application
+
+  def start(_type, _args) do
+    Supervisor.start_link([Coney.ApplicationSupervisor], [strategy: :one_for_one])
+  end
+end
+```
+
+## Configure consumers
+
+```
+# config/queues.exs
+
+config :coney,
   workers: [
     MyApplication.MyConsumer
   ]
@@ -56,12 +119,6 @@ config :coney,
       worker: MyApplication.MyConsumer
     }
   ]
-```
-
-```elixir
-# config/test.exs
-
-config :coney, adapter: Coney.FakeConnection, settings: %{}
 ```
 
 ```elixir
