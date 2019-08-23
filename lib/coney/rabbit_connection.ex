@@ -70,7 +70,7 @@ defmodule Coney.RabbitConnection do
     Channel.close(channel)
   end
 
-  defp declare_queue(channel, %{name: name, options: opts, bindings: bindings}) do
+  defp declare_queue(channel, {name, %{options: opts, bindings: bindings}}) do
     Queue.declare(channel, name, opts)
     Enum.each(bindings, &create_binding(channel, name, &1))
 

@@ -28,8 +28,8 @@ defmodule Coney.ApplicationSupervisor do
   def settings do
     [
       adapter: Application.get_env(:coney, :adapter),
-      settings: get_config(:settings, :rabbitmq_settings),
-      topology: get_config(:topology, :rabbitmq_topology, %{exchanges: [], queues: []})
+      settings: get_config(:settings, :settings),
+      topology: get_config(:topology, :topology, %{exchanges: [], queues: []})
     ]
   end
 

@@ -52,25 +52,25 @@ config :coney,
 
 If you need to create exchanges or queues before starting the consumer, you can define your RabbitMQ topology as follows:
 ```elixir
-config :coney,
-  topology: %{
-    exchanges: [{:topic, "my_exchange", durable: true}],
-    queues: [
-      %{
-        name: "my_queue",
-        options: [
-          durable: true,
-          arguments: [
-            {"x-dead-letter-exchange", :longstr, "dlx_exchange"},
-            {"x-message-ttl", :signedint, 60000}
+  config :coney,
+    topology: %{
+      exchanges: [{:topic, "my_exchange", durable: true}],
+      queues: [
+        %{
+          name: "my_queue",
+          options: [
+            durable: true,
+            arguments: [
+              {"x-dead-letter-exchange", :longstr, "dlx_exchange"},
+              {"x-message-ttl", :signedint, 60000}
+            ]
+          ],
+          bindings: [
+            [exchange: "my_exchange", options: [routing_key: "my_queue"]]
           ]
-        ],
-        bindings: [
-          [exchange: "my_exchange", options: [routing_key: "my_queue"]]
-        ]
-      }
-    ]
-  } 
+        }
+      ]
+    } 
 ```
 
 ```elixir
@@ -93,19 +93,18 @@ config :coney,
 
 ```elixir
 defmodule RabbitConfig do
-  def rabbitmq_settings do
+  def settings do
     %{
       url: "amqp://guest:guest@localhost",
       timeout: 1000
     }
   end
   
-  def rabbitmq_topology do
+  def topology do
   %{
     exchanges: [{:topic, "my_exchange", durable: true}],
-    queues: [
-      %{
-        name: "my_queue",
+    queues: %{
+      "my_queue" => %{
         options: [
           durable: true,
           arguments: [
@@ -117,7 +116,7 @@ defmodule RabbitConfig do
           [exchange: "my_exchange", options: [routing_key: "my_queue"]]
         ]
       }
-    ]
+    }
   }
   end
 end
@@ -172,7 +171,7 @@ defmodule MyApplication.MyConsumer do
   def connection do
     %{
       prefetch_count: 10,
-      queue: "my_queue",
+      queue: "my_queue"
     }
   end
 
