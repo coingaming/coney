@@ -55,9 +55,8 @@ If you need to create exchanges or queues before starting the consumer, you can 
   config :coney,
     topology: %{
       exchanges: [{:topic, "my_exchange", durable: true}],
-      queues: [
-        %{
-          name: "my_queue",
+      queues: %{
+        "my_queue" => %{
           options: [
             durable: true,
             arguments: [
@@ -69,7 +68,7 @@ If you need to create exchanges or queues before starting the consumer, you can 
             [exchange: "my_exchange", options: [routing_key: "my_queue"]]
           ]
         }
-      ]
+      }
     } 
 ```
 
