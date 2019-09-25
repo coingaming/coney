@@ -38,7 +38,7 @@ defmodule RabbitConnectionTest do
     end
 
     test "declares queue with default exchange binding", %{conn: conn, chan: chan} do
-      queue = %{name: "queue", options: [], bindings: [[exchange: "test_exchange"]]}
+      queue = {"queue", %{options: [], bindings: [[exchange: "test_exchange"]]}}
       topology = %{exchanges: [{:direct, "test_exchange"}], queues: [queue]}
 
       assert :ok = RabbitConnection.init_topology(conn, topology)
@@ -46,7 +46,7 @@ defmodule RabbitConnectionTest do
     end
 
     test "declares queue with default exchange with :default option", %{conn: conn, chan: chan} do
-      queue = %{name: "queue", options: [], bindings: [[exchange: :default]]}
+      queue = {"queue", %{options: [], bindings: [[exchange: :default]]}}
       topology = %{exchanges: [], queues: [queue]}
 
       assert :ok = RabbitConnection.init_topology(conn, topology)
@@ -54,7 +54,7 @@ defmodule RabbitConnectionTest do
     end
 
     test "declares queue with arguments and binds to exchange with routing key", %{conn: conn, chan: chan} do
-      queue = %{name: "dlx_queue", options: [arguments: [{"x-dead-letter-exchange", :longstr, "dlx_exchange"}]], bindings: [[exchange: "test_exchange", options: [routing_key: "test.route"]]]}
+      queue = {"dlx_queue", %{options: [arguments: [{"x-dead-letter-exchange", :longstr, "dlx_exchange"}]], bindings: [[exchange: "test_exchange", options: [routing_key: "test.route"]]]}}
       topology = %{exchanges: [{:topic, "dlx_exchange"}, {:direct, "test_exchange"}], queues: [queue]}
 
       assert :ok = RabbitConnection.init_topology(conn, topology)

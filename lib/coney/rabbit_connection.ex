@@ -77,7 +77,7 @@ defmodule Coney.RabbitConnection do
     name
   end
 
-  defp declare_queue(channel, %{name: name}) do
+  defp declare_queue(channel, {name, _}) do
     declare_queue(channel, %{name: name, options: [], bindings: []})
   end
 
