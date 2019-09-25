@@ -5,3 +5,7 @@ otp_release:
   - 22.0
 services:
   - rabbitmq
+addons:
+  apt:
+    packages:
+      - rabbitmq-server
