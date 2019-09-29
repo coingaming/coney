@@ -26,4 +26,8 @@ defmodule Coney.FakeConnection do
   def reject(_, _, _) do
     :rejected
   end
+
+  def init_topology(_, _) do
+    :ok
+  end
 end

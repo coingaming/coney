@@ -43,12 +43,33 @@ Default config:
 # config/config.exs
 config :coney,
   adapter: Coney.RabbitConnection,
-  pool_size: 1,
   auto_start: true,
   settings: %{
     url: "amqp://guest:guest@localhost", # or ["amqp://guest:guest@localhost", "amqp://guest:guest@other_host"]
     timeout: 1000
   }
+```
+
+If you need to create exchanges or queues before starting the consumer, you can define your RabbitMQ topology as follows:
+```elixir
+  config :coney,
+    topology: %{
+      exchanges: [{:topic, "my_exchange", durable: true}],
+      queues: %{
+        "my_queue" => %{
+          options: [
+            durable: true,
+            arguments: [
+              {"x-dead-letter-exchange", :longstr, "dlx_exchange"},
+              {"x-message-ttl", :signedint, 60000}
+            ]
+          ],
+          bindings: [
+            [exchange: "my_exchange", options: [routing_key: "my_queue"]]
+          ]
+        }
+      }
+    } 
 ```
 
 ```elixir
@@ -65,16 +86,37 @@ config :coney,
   adapter: Coney.RabbitConnection,
   pool_size: 1,
   auto_start: true,
-  settings: RabbitConfig
+  settings: RabbitConfig,
+  topology: RabbitConfig
 ```
 
 ```elixir
 defmodule RabbitConfig do
-  def rabbitmq_settings do
+  def settings do
     %{
       url: "amqp://guest:guest@localhost",
       timeout: 1000
     }
+  end
+  
+  def topology do
+  %{
+    exchanges: [{:topic, "my_exchange", durable: true}],
+    queues: %{
+      "my_queue" => %{
+        options: [
+          durable: true,
+          arguments: [
+            {"x-dead-letter-exchange", :longstr, "exchange"},
+            {"x-message-ttl", :signedint, 60000}
+          ]
+        ],
+        bindings: [
+          [exchange: "my_exchange", options: [routing_key: "my_queue"]]
+        ]
+      }
+    }
+  }
   end
 end
 ```
@@ -112,9 +154,7 @@ config :coney,
     %{
       connection: %{
         prefetch_count: 10,
-        exchange:       {:direct, "my_exchange", durable: true},
-        queue:          {"my_queue", durable: true},
-        binding:        [routing_key: "routing_key"]
+        queue: "my_queue"
       },
       worker: MyApplication.MyConsumer
     }
@@ -130,9 +170,7 @@ defmodule MyApplication.MyConsumer do
   def connection do
     %{
       prefetch_count: 10,
-      exchange:       {:direct, "my_exchange", durable: true},
-      queue:          {"my_queue", durable: true},
-      binding:        [routing_key: "routing_key"]
+      queue: "my_queue"
     }
   end
 

@@ -1,7 +1,7 @@
 defmodule RabbitConnectionTest do
   use ExUnit.Case, async: true
 
-  alias AMQP.{Connection, Channel}
+  alias AMQP.{Connection, Channel, Basic, Queue}
   alias Coney.RabbitConnection
 
   describe "RabbitConnection.subscribe/3" do
@@ -14,51 +14,62 @@ defmodule RabbitConnectionTest do
         Connection.close(conn)
       end)
 
-      %{chan: chan}
+      Queue.declare(chan, "generic_queue", [])
+
+      %{chan: chan, conn: conn}
     end
 
-    test "subscribes to the default exchange using :default option", %{chan: chan} do
-      consumer = build_consumer(:default)
+    test "declares direct exchange", %{conn: conn} do
+      topology = %{exchanges: [{:direct, "direct_exchange"}], queues: []}
 
-      assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
+      assert :ok = RabbitConnection.init_topology(conn, topology)
     end
 
-    test "subscribes to the default exchange using empty string as name", %{chan: chan} do
-      consumer = build_consumer({:direct, ""})
+    test "declares fanout exchange", %{conn: conn} do
+      topology = %{exchanges: [{:fanout, "fanout_exchange"}], queues: []}
 
-      assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
+      assert :ok = RabbitConnection.init_topology(conn, topology)
     end
 
-    test "subscribes to a direct exchange", %{chan: chan} do
-      consumer = build_consumer({:direct, rand_name()})
+    test "declares topic exchange", %{conn: conn} do
+      topology = %{exchanges: [{:topic, "topic_exchange"}], queues: []}
 
-      assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
+      assert :ok = RabbitConnection.init_topology(conn, topology)
     end
 
-    test "subscribes to a fanout exchange", %{chan: chan} do
-      consumer = build_consumer({:fanout, rand_name()})
+    test "declares queue with default exchange binding", %{conn: conn, chan: chan} do
+      queue = {"queue", %{options: [], bindings: [[exchange: "test_exchange"]]}}
+      topology = %{exchanges: [{:direct, "test_exchange"}], queues: [queue]}
 
-      assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
+      assert :ok = RabbitConnection.init_topology(conn, topology)
+      assert {:ok, _consumer} = Basic.consume(chan, "queue", nil)
     end
 
-    test "subscribes to a topic exchange", %{chan: chan} do
-      consumer = build_consumer({:topic, rand_name()})
+    test "declares queue with default exchange with :default option", %{conn: conn, chan: chan} do
+      queue = {"queue", %{options: [], bindings: [[exchange: :default]]}}
+      topology = %{exchanges: [], queues: [queue]}
 
-      assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
+      assert :ok = RabbitConnection.init_topology(conn, topology)
+      assert {:ok, _consumer} = Basic.consume(chan, "queue", nil)
     end
 
-    defp rand_name do
-      :crypto.strong_rand_bytes(8) |> Base.encode64()
+    test "declares queue with arguments and binds to exchange with routing key", %{conn: conn, chan: chan} do
+      queue = {"dlx_queue", %{options: [arguments: [{"x-dead-letter-exchange", :longstr, "dlx_exchange"}]], bindings: [[exchange: "test_exchange", options: [routing_key: "test.route"]]]}}
+      topology = %{exchanges: [{:topic, "dlx_exchange"}, {:direct, "test_exchange"}], queues: [queue]}
+
+      assert :ok = RabbitConnection.init_topology(conn, topology)
+      assert {:ok, _consumer} = Basic.consume(chan, "dlx_queue", nil)
     end
 
-    defp build_consumer(exchange_opts) do
-      %{
+    test "subscribes to a queue", %{chan: chan} do
+      consumer = %{
         connection: %{
           prefetch_count: 10,
-          exchange: exchange_opts,
-          queue: {"test_queue"}
+          queue: "generic_queue"
         }
       }
+
+      assert {:ok, _} = RabbitConnection.subscribe(chan, nil, consumer)
     end
   end
 end

@@ -40,40 +40,7 @@ defmodule Coney.RabbitConnection do
 
     Basic.qos(chan, prefetch_count: connection.prefetch_count)
 
-    queue = declare_queue(chan, connection.queue)
-
-    exchange_name = declare_exchange(chan, Map.get(connection, :exchange, nil))
-
-    bind_queue(chan, exchange_name, queue, Map.get(connection, :binding, []))
-
-    {:ok, _consumer_tag} = Basic.consume(chan, queue, consumer_pid)
-  end
-
-  defp declare_queue(chan, {name}) do
-    declare_queue(chan, {name, []})
-  end
-
-  defp declare_queue(chan, {name, params}) do
-    Queue.declare(chan, name, params)
-    name
-  end
-
-  defp declare_exchange(chan, {type, name}) do
-    declare_exchange(chan, {type, name, []})
-  end
-
-  defp declare_exchange(_, {:direct, "", _}), do: :default_exchange
-  defp declare_exchange(_, :default), do: :default_exchange
-
-  defp declare_exchange(chan, {type, name, params}) do
-    Exchange.declare(chan, name, type, params)
-    name
-  end
-
-  defp bind_queue(_, :default_exchange, _, _), do: :ok
-
-  defp bind_queue(chan, exchange_name, queue, options) do
-    Queue.bind(chan, queue, exchange_name, options)
+    {:ok, _consumer_tag} = Basic.consume(chan, connection.queue, consumer_pid)
   end
 
   def publish(conn, exchange_name, routing_key, message) do
@@ -92,5 +59,52 @@ defmodule Coney.RabbitConnection do
 
   def reject(channel, tag, opts) do
     Basic.reject(channel, tag, opts)
+  end
+
+  def init_topology(conn, %{exchanges: exchanges, queues: queues}) do
+    channel = create_channel(conn)
+
+    Enum.each(exchanges, &declare_exchange(channel, &1))
+    Enum.each(queues, &declare_queue(channel, &1))
+
+    Channel.close(channel)
+  end
+
+  defp declare_queue(channel, {name, %{options: opts, bindings: bindings}}) do
+    Queue.declare(channel, name, opts)
+    Enum.each(bindings, &create_binding(channel, name, &1))
+
+    name
+  end
+
+  defp declare_queue(channel, {name, _}) do
+    declare_queue(channel, %{name: name, options: [], bindings: []})
+  end
+
+  defp create_binding(channel, _queue, []) do
+    :ok
+  end
+
+  defp create_binding(channel, queue, binding_opts) do
+    exchange = Keyword.get(binding_opts, :exchange, :default)
+    opts = Keyword.get(binding_opts, :options, [])
+    create_binding(channel, queue, exchange, opts)
+  end
+
+  defp create_binding(channel, queue, :default, opts) do
+    :ok
+  end
+
+  defp create_binding(channel, queue, exchange, opts) do
+    Queue.bind(channel, queue, exchange, opts)
+  end
+
+  defp declare_exchange(channel, {type, name}) do
+    declare_exchange(channel, {type, name, []})
+  end
+
+  defp declare_exchange(channel, {type, name, params}) do
+    Exchange.declare(channel, name, type, params)
+    name
   end
 end

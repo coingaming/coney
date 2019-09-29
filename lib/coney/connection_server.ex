@@ -6,25 +6,24 @@ defmodule Coney.ConnectionServer do
   alias Coney.{
     ConsumerSupervisor,
     ConsumerConnection,
-    PoolSupervisor,
     ApplicationSupervisor,
     HealthCheck.ConnectionRegistry
   }
 
   defmodule State do
-    defstruct [:pool_pid, :consumers, :adapter, :settings, :amqp_conn]
+    defstruct [:consumers, :adapter, :settings, :amqp_conn, :topology]
   end
 
-  def start_link(pool_pid, consumers, adapter: adapter, settings: settings) do
-    GenServer.start_link(__MODULE__, [pool_pid, consumers, adapter, settings])
+  def start_link(consumers, adapter: adapter, settings: settings, topology: topology) do
+    GenServer.start_link(__MODULE__, [consumers, adapter, settings, topology])
   end
 
-  def init([pool_pid, consumers, adapter, settings]) do
+  def init([consumers, adapter, settings, topology]) do
     send(self(), :after_init)
 
     ConnectionRegistry.associate(self())
 
-    {:ok, %State{pool_pid: pool_pid, consumers: consumers, adapter: adapter, settings: settings}}
+    {:ok, %State{consumers: consumers, adapter: adapter, settings: settings, topology: topology}}
   end
 
   def confirm(pid, channel, tag) do
@@ -103,28 +102,27 @@ defmodule Coney.ConnectionServer do
 
   defp rabbitmq_connect(
          %State{
-           pool_pid: pool_pid,
            consumers: consumers,
            adapter: adapter,
-           settings: settings
+           settings: settings,
+           topology: topology
          } = state
        ) do
     conn = adapter.open(settings)
-    start_consumers(pool_pid, consumers, adapter, conn)
+    adapter.init_topology(conn, topology)
+    start_consumers(consumers, adapter, conn)
 
     ConnectionRegistry.connected(self())
 
     {:noreply, %State{state | amqp_conn: conn}}
   end
 
-  defp start_consumers(pool_pid, consumers, adapter, conn) do
-    consumer_supervisor_pid = PoolSupervisor.consumer_supervisor_pid(pool_pid)
-
+  defp start_consumers(consumers, adapter, conn) do
     Enum.each(consumers, fn consumer ->
       subscribe_chan = adapter.create_channel(conn)
       connection = ConsumerConnection.build(self(), subscribe_chan)
 
-      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer_supervisor_pid, consumer, connection)
+      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, connection)
       adapter.subscribe(subscribe_chan, pid, consumer)
 
       Logger.debug("#{inspect(consumer)} (#{inspect(pid)}) started")

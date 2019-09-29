@@ -4,9 +4,7 @@ defmodule FakeConsumer do
   def connection do
     %{
       prefetch_count: 10,
-      exchange: {:fanout, "subscribe_exchange", durable: true},
-      queue: {"queue"},
-      respond_to: {:fanout, "response_exchange", durable: true}
+      queue: "queue"
     }
   end
 

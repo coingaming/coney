@@ -1,7 +1,7 @@
 defmodule Coney.ApplicationSupervisor do
   use Supervisor
 
-  alias Coney.{PoolSupervisor, HealthCheck.ConnectionRegistry}
+  alias Coney.{HealthCheck.ConnectionRegistry, ConsumerSupervisor, ConnectionServer}
 
   def start_link(consumers) do
     Supervisor.start_link(__MODULE__, [consumers], name: __MODULE__)
@@ -16,26 +16,21 @@ defmodule Coney.ApplicationSupervisor do
 
   def init([consumers]) do
     settings = settings()
-    pool_size = pool_size()
 
-    1..pool_size
-    |> Enum.map(&pool_supervisor(&1, consumers, settings))
-    |> supervise(strategy: :one_for_one)
-  end
+    children = [
+      supervisor(ConsumerSupervisor, []),
+      worker(ConnectionServer, [consumers, settings])
+    ]
 
-  defp pool_supervisor(i, consumers, settings) do
-    supervisor(PoolSupervisor, [consumers, settings], id: "coney.pool.#{i}")
+    supervise(children, strategy: :one_for_one)
   end
 
   def settings do
     [
       adapter: Application.get_env(:coney, :adapter),
-      settings: connection_settings()
+      settings: get_config(:settings, :settings),
+      topology: get_config(:topology, :topology, %{exchanges: [], queues: []})
     ]
-  end
-
-  def pool_size do
-    Application.get_env(:coney, :pool_size, 1)
   end
 
   def connection_server_pid do
@@ -55,18 +50,21 @@ defmodule Coney.ApplicationSupervisor do
     |> Enum.to_list()
   end
 
-  defp connection_settings do
-    settings = Application.get_env(:coney, :settings)
+  defp get_config(key, callback, default \\ false) do
+    config = Application.get_env(:coney, key)
 
     cond do
-      is_map(settings) ->
-        settings
+      is_map(config) ->
+        config
 
-      is_atom(settings) ->
-        settings.rabbitmq_settings()
+      is_atom(config) ->
+        apply(config, callback, [])
+
+      default ->
+        default
 
       true ->
-        raise "Please, specify connection settings via config file or module"
+        raise "Please, specify #{Atom.to_string(key)} via config file or module"
     end
   end
 end
