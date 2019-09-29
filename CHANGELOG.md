@@ -1,16 +1,10 @@
 ## [3.0.0]
 
 ### Enhancements
- - Introduce RabbitMQ `topology` configuration and setup. Coney now starts up in two phases, first it sets up the topology(queues/exchanges) and then starts consuming from the queues. This allows for more complex RabbitMQ setups like retry queues etc.
- - Remove pooling for clusters as this should be handled on cluster side instead
-
-## [master]
-
-### Enhancements
-
+- Introduce RabbitMQ `topology` configuration and setup. Coney now starts up in two phases, first it sets up the topology (queues/exchanges) and then starts consuming from the queues. This allows more complex RabbitMQ setups like retry queues, etc.
+- Remove pooling for clusters as this should be handled on cluster side instead
 - `auto_start` option allow you choose how you want to start Coney. Use `false` value if you want to add `Coney.ApplicationSupervisor` to your supervisor. `true` (default value) means that Coney will run on application start.
-
-- Settings module. You can speficfy a module name under `coney.settings` section and define `rabbitmq_settings/0` function, which should return connection configuration.
+- Settings module. You can speficfy a module name under `coney.settings` section and define `settings/0` function, which should return connection configuration.
 
 ## [2.2.1]
 
