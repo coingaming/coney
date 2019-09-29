@@ -58,7 +58,7 @@ defmodule RabbitConnectionTest do
       topology = %{exchanges: [{:topic, "dlx_exchange"}, {:direct, "test_exchange"}], queues: [queue]}
 
       assert :ok = RabbitConnection.init_topology(conn, topology)
-      assert {:ok, _consumer} = Basic.consume(chan, "queue", nil)
+      assert {:ok, _consumer} = Basic.consume(chan, "dlx_queue", nil)
     end
 
     test "subscribes to a queue", %{chan: chan} do
