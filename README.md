@@ -69,7 +69,7 @@ If you need to create exchanges or queues before starting the consumer, you can 
           ]
         }
       }
-    } 
+    }
 ```
 
 ```elixir
@@ -98,25 +98,25 @@ defmodule RabbitConfig do
       timeout: 1000
     }
   end
-  
+
   def topology do
-  %{
-    exchanges: [{:topic, "my_exchange", durable: true}],
-    queues: %{
-      "my_queue" => %{
-        options: [
-          durable: true,
-          arguments: [
-            {"x-dead-letter-exchange", :longstr, "exchange"},
-            {"x-message-ttl", :signedint, 60000}
+    %{
+      exchanges: [{:topic, "my_exchange", durable: true}],
+      queues: %{
+        "my_queue" => %{
+          options: [
+            durable: true,
+            arguments: [
+              {"x-dead-letter-exchange", :longstr, "exchange"},
+              {"x-message-ttl", :signedint, 60000}
+            ]
+          ],
+          bindings: [
+            [exchange: "my_exchange", options: [routing_key: "my_queue"]]
           ]
-        ],
-        bindings: [
-          [exchange: "my_exchange", options: [routing_key: "my_queue"]]
-        ]
+        }
       }
     }
-  }
   end
 end
 ```
