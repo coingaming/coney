@@ -81,7 +81,7 @@ defmodule Coney.RabbitConnection do
     declare_queue(channel, %{name: name, options: [], bindings: []})
   end
 
-  defp create_binding(channel, _queue, []) do
+  defp create_binding(_channel, _queue, []) do
     :ok
   end
 
@@ -91,7 +91,7 @@ defmodule Coney.RabbitConnection do
     create_binding(channel, queue, exchange, opts)
   end
 
-  defp create_binding(channel, queue, :default, opts) do
+  defp create_binding(_channel, _queue, :default, _opts) do
     :ok
   end
 
