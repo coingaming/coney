@@ -24,8 +24,8 @@ defmodule Coney.Mixfile do
 
   defp deps do
     [
-      {:amqp, "~> 1.2"},
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:amqp, "~> 1.3"},
+      {:ex_doc, "~> 0.20", only: :dev, runtime: false}
     ]
   end
 
