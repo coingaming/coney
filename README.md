@@ -142,7 +142,7 @@ end
 
 ## Configure consumers
 
-```
+```elixir
 # config/queues.exs
 
 config :coney,
