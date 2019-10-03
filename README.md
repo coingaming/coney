@@ -236,16 +236,16 @@ Response will be published to `"response_exchange"` exchange.
 To use the default exchange you may declare exchange as `:default`:
 
 ```elixir
-  %{
-      exchanges: [:default],
-  }
+%{
+    exchanges: [:default],
+}
 ```
 The following format is also acceptable:
 
 ```elixir
-  %{
-    exchanges: [{:direct, ""}]
-  }
+%{
+  exchanges: [{:direct, ""}]
+}
 ```
 
 Or you can just skip it in the `exchanges` settings and setup the queue in the consumer's settings:
