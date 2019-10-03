@@ -233,27 +233,30 @@ Response will be published to `"response_exchange"` exchange.
 
 ### The default exchange
 
-To use the default exchange you should set `connection.exchange` to `:default` parameter:
+To use the default exchange you may declare exchange as `:default`:
 
 ```elixir
-# web/consumers/my_consumer.ex
-
-def connection do
   %{
-    # ...
-    exchange: :default
+      exchanges: [:default],
   }
-end
 ```
 The following format is also acceptable:
 
 ```elixir
-def connection do
   %{
-    # ...
-    exchange: {:direct, ""}
+    exchanges: [{:direct, ""}]
   }
-end
+```
+
+Or you can just skip it in the `exchanges` settings and setup the queue in the consumer's settings:
+
+```elixir
+
+%{
+  prefetch_count: 10,
+  queue: "my_queue"
+}
+
 ```
 
 ## Publish message

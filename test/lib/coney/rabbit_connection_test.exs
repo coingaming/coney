@@ -53,9 +53,21 @@ defmodule RabbitConnectionTest do
       assert {:ok, _consumer} = Basic.consume(chan, "queue", nil)
     end
 
-    test "declares queue with arguments and binds to exchange with routing key", %{conn: conn, chan: chan} do
-      queue = {"dlx_queue", %{options: [arguments: [{"x-dead-letter-exchange", :longstr, "dlx_exchange"}]], bindings: [[exchange: "test_exchange", options: [routing_key: "test.route"]]]}}
-      topology = %{exchanges: [{:topic, "dlx_exchange"}, {:direct, "test_exchange"}], queues: [queue]}
+    test "declares queue with arguments and binds to exchange with routing key", %{
+      conn: conn,
+      chan: chan
+    } do
+      queue =
+        {"dlx_queue",
+         %{
+           options: [arguments: [{"x-dead-letter-exchange", :longstr, "dlx_exchange"}]],
+           bindings: [[exchange: "test_exchange", options: [routing_key: "test.route"]]]
+         }}
+
+      topology = %{
+        exchanges: [{:topic, "dlx_exchange"}, {:direct, "test_exchange"}],
+        queues: [queue]
+      }
 
       assert :ok = RabbitConnection.init_topology(conn, topology)
       assert {:ok, _consumer} = Basic.consume(chan, "dlx_queue", nil)

@@ -57,11 +57,11 @@ defmodule Coney.ApplicationSupervisor do
       is_map(config) ->
         config
 
+      is_nil(config) ->
+        default
+
       is_atom(config) ->
         apply(config, callback, [])
-
-      default ->
-        default
 
       true ->
         raise "Please, specify #{Atom.to_string(key)} via config file or module"

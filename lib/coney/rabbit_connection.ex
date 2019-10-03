@@ -70,6 +70,18 @@ defmodule Coney.RabbitConnection do
     Channel.close(channel)
   end
 
+  def init_topology(conn, %{queues: _queues} = params) do
+    init_topology(conn, Map.put(params, :exchanges, []))
+  end
+
+  def init_topology(conn, %{exchanges: _exchanges} = params) do
+    init_topology(conn, Map.put(params, :queues, []))
+  end
+
+  def init_topology(conn, params) do
+    init_topology(conn, Map.merge(params, %{exchanges: [], queues: []}))
+  end
+
   defp declare_queue(channel, {name, %{options: opts, bindings: bindings}}) do
     Queue.declare(channel, name, opts)
     Enum.each(bindings, &create_binding(channel, name, &1))
@@ -98,6 +110,12 @@ defmodule Coney.RabbitConnection do
   defp create_binding(channel, queue, exchange, opts) do
     Queue.bind(channel, queue, exchange, opts)
   end
+
+  defp declare_exchange(_, {_, ""}), do: :default_exchange
+
+  defp declare_exchange(_, {_, "", _}), do: :default_exchange
+
+  defp declare_exchange(_, :default), do: :default_exchange
 
   defp declare_exchange(channel, {type, name}) do
     declare_exchange(channel, {type, name, []})
