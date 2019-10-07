@@ -72,12 +72,6 @@ If you need to create exchanges or queues before starting the consumer, you can 
     }
 ```
 
-```elixir
-# config/test.exs
-
-config :coney, auto_start: false
-```
-
 Also, you can create a confuguration module (if you want to retreive settings from Consul or something else):
 
 ```elixir
