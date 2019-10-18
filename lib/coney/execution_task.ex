@@ -1,27 +1,27 @@
 defmodule Coney.ExecutionTask do
   defstruct consumer: nil,
             settings: %{},
-            connection: nil,
+            chan: nil,
             payload: nil,
             tag: nil,
             meta: %{}
 
-  def build(%{worker: consumer, connection: settings}, connection, payload, tag, meta) do
+  def build(%{worker: consumer, connection: settings}, chan, payload, tag, meta) do
     %__MODULE__{
       consumer: consumer,
       settings: settings,
-      connection: connection,
+      chan: chan,
       payload: payload,
       tag: tag,
       meta: meta
     }
   end
 
-  def build(consumer, connection, payload, tag, meta) do
+  def build(consumer, chan, payload, tag, meta) do
     %__MODULE__{
       consumer: consumer,
       settings: consumer.connection(),
-      connection: connection,
+      chan: chan,
       payload: payload,
       tag: tag,
       meta: meta

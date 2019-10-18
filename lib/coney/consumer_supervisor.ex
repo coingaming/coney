@@ -13,7 +13,7 @@ defmodule Coney.ConsumerSupervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def start_consumer(consumer, connection) do
-    Supervisor.start_child(__MODULE__, [consumer, connection])
+  def start_consumer(consumer, chan) do
+    Supervisor.start_child(__MODULE__, [consumer, chan])
   end
 end

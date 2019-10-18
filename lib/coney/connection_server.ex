@@ -5,8 +5,6 @@ defmodule Coney.ConnectionServer do
 
   alias Coney.{
     ConsumerSupervisor,
-    ConsumerConnection,
-    ApplicationSupervisor,
     HealthCheck.ConnectionRegistry
   }
 
@@ -15,7 +13,7 @@ defmodule Coney.ConnectionServer do
   end
 
   def start_link(consumers, adapter: adapter, settings: settings, topology: topology) do
-    GenServer.start_link(__MODULE__, [consumers, adapter, settings, topology])
+    GenServer.start_link(__MODULE__, [consumers, adapter, settings, topology], name: __MODULE__)
   end
 
   def init([consumers, adapter, settings, topology]) do
@@ -26,36 +24,20 @@ defmodule Coney.ConnectionServer do
     {:ok, %State{consumers: consumers, adapter: adapter, settings: settings, topology: topology}}
   end
 
-  def confirm(pid, channel, tag) do
-    GenServer.call(pid, {:confirm, channel, tag})
+  def confirm(channel, tag) do
+    GenServer.call(__MODULE__, {:confirm, channel, tag})
   end
 
-  def reject(pid, channel, tag, requeue) do
-    GenServer.call(pid, {:reject, channel, tag, requeue})
+  def reject(channel, tag, requeue) do
+    GenServer.call(__MODULE__, {:reject, channel, tag, requeue})
   end
 
   def publish(exchange_name, message) do
-    case ApplicationSupervisor.connection_server_pid() do
-      {:ok, pid} ->
-        GenServer.call(pid, {:publish, exchange_name, message})
-
-      error ->
-        error
-    end
+    GenServer.call(__MODULE__, {:publish, exchange_name, message})
   end
 
   def publish(exchange_name, routing_key, message) do
-    case ApplicationSupervisor.connection_server_pid() do
-      {:ok, pid} ->
-        publish(pid, exchange_name, routing_key, message)
-
-      error ->
-        error
-    end
-  end
-
-  def publish(pid, exchange_name, routing_key, message) do
-    GenServer.call(pid, {:publish, exchange_name, routing_key, message})
+    GenServer.call(__MODULE__, {:publish, exchange_name, routing_key, message})
   end
 
   def handle_info(:after_init, state) do
@@ -120,9 +102,8 @@ defmodule Coney.ConnectionServer do
   defp start_consumers(consumers, adapter, conn) do
     Enum.each(consumers, fn consumer ->
       subscribe_chan = adapter.create_channel(conn)
-      connection = ConsumerConnection.build(self(), subscribe_chan)
 
-      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, connection)
+      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, subscribe_chan)
       adapter.subscribe(subscribe_chan, pid, consumer)
 
       Logger.debug("#{inspect(consumer)} (#{inspect(pid)}) started")

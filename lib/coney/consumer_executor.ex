@@ -1,7 +1,7 @@
 defmodule Coney.ConsumerExecutor do
   require Logger
 
-  alias Coney.{ConnectionServer, ExecutionTask, ConsumerConnection}
+  alias Coney.{ConnectionServer, ExecutionTask}
 
   def consume(%ExecutionTask{consumer: consumer, payload: payload, meta: meta} = task) do
     payload
@@ -22,12 +22,7 @@ defmodule Coney.ConsumerExecutor do
           |> handle_result(task)
 
         true ->
-          Logger.error(
-            "#{consumer} (#{inspect(self())}) unhandled exception, message will be rejected: #{
-              inspect(exception)
-            }"
-          )
-
+          log_error(consumer, exception)
           reject(task)
       end
   end
@@ -40,44 +35,36 @@ defmodule Coney.ConsumerExecutor do
 
   defp handle_result({:reply, response}, task), do: reply(task, response)
 
-  defp ack(%ExecutionTask{
-         tag: tag,
-         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
-       }) do
-    ConnectionServer.confirm(pid, channel, tag)
+  defp ack(%ExecutionTask{tag: tag, chan: chan}) do
+    ConnectionServer.confirm(chan, tag)
   end
 
-  defp reply(
-         %ExecutionTask{connection: connection, settings: %{respond_to: exchange_name}} = task,
-         response
-       ) do
+  defp reply(%ExecutionTask{settings: %{respond_to: exchange_name}} = task, response) do
     ack(task)
-    send_message(connection, exchange_name, response)
+    send_message(exchange_name, response)
   end
 
-  defp redeliver(%ExecutionTask{
-         tag: tag,
-         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
-       }) do
-    ConnectionServer.reject(pid, channel, tag, true)
+  defp redeliver(%ExecutionTask{tag: tag, chan: chan}) do
+    ConnectionServer.reject(chan, tag, true)
   end
 
-  defp reject(%ExecutionTask{
-         tag: tag,
-         connection: %ConsumerConnection{connection_server_pid: pid, subscribe_channel: channel}
-       }) do
-    ConnectionServer.reject(pid, channel, tag, false)
+  defp reject(%ExecutionTask{tag: tag, chan: chan}) do
+    ConnectionServer.reject(chan, tag, false)
   end
 
-  defp send_message(
-         %ConsumerConnection{connection_server_pid: pid},
-         exchange,
-         {routing_key, response}
-       ) do
-    ConnectionServer.publish(pid, exchange, routing_key, response)
+  defp send_message(exchange, {routing_key, response}) do
+    ConnectionServer.publish(exchange, routing_key, response)
   end
 
-  defp send_message(connection, exchange, response) do
-    send_message(connection, exchange, {"", response})
+  defp send_message(exchange, response) do
+    send_message(exchange, {"", response})
+  end
+
+  defp log_error(consumer, exception) do
+    Logger.error(
+      "#{consumer} (#{inspect(self())}) unhandled exception, message will be rejected: #{
+        inspect(exception)
+      }"
+    )
   end
 end

@@ -17,7 +17,7 @@ defmodule Coney.Mixfile do
 
   def application do
     [
-      extra_applications: [],
+      extra_applications: [:logger],
       mod: {Coney.Application, []}
     ]
   end

@@ -1,14 +1,12 @@
 defmodule ConsumerServerTest do
   use ExUnit.Case, async: true
 
-  alias Coney.{ConsumerServer, ConsumerConnection}
+  alias Coney.ConsumerServer
 
   setup do
-    connection = ConsumerConnection.build(nil, :channel)
-
     [
-      args: [FakeConsumer, connection],
-      state: %{consumer: FakeConsumer, connection: connection}
+      args: [FakeConsumer, :channel],
+      state: %{consumer: FakeConsumer, chan: :channel}
     ]
   end
 

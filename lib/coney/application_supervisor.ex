@@ -1,7 +1,7 @@
 defmodule Coney.ApplicationSupervisor do
   use Supervisor
 
-  alias Coney.{HealthCheck.ConnectionRegistry, ConsumerSupervisor, ConnectionServer}
+  alias Coney.{ConsumerSupervisor, ConnectionServer}
 
   def start_link(consumers) do
     Supervisor.start_link(__MODULE__, [consumers], name: __MODULE__)
@@ -31,23 +31,6 @@ defmodule Coney.ApplicationSupervisor do
       settings: get_config(:settings, :settings),
       topology: get_config(:topology, :topology, %{exchanges: [], queues: []})
     ]
-  end
-
-  def connection_server_pid do
-    case Enum.random(active_servers()) do
-      pid when is_pid(pid) ->
-        {:ok, pid}
-
-      _ ->
-        {:error, :no_connected_servers}
-    end
-  end
-
-  def active_servers do
-    ConnectionRegistry.status()
-    |> Stream.filter(fn {_pid, status} -> status == :connected end)
-    |> Stream.map(fn {pid, _status} -> pid end)
-    |> Enum.to_list()
   end
 
   defp get_config(key, callback, default \\ false) do

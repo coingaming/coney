@@ -3,12 +3,12 @@ defmodule Coney.ConsumerServer do
 
   alias Coney.{ConsumerExecutor, ExecutionTask}
 
-  def start_link(consumer, connection) do
-    GenServer.start_link(__MODULE__, [consumer, connection])
+  def start_link(consumer, chan) do
+    GenServer.start_link(__MODULE__, [consumer, chan])
   end
 
-  def init([consumer, connection]) do
-    {:ok, %{consumer: consumer, connection: connection}}
+  def init([consumer, chan]) do
+    {:ok, %{consumer: consumer, chan: chan}}
   end
 
   def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, state) do
@@ -29,9 +29,9 @@ defmodule Coney.ConsumerServer do
           payload,
           %{delivery_tag: tag} = meta
         },
-        %{consumer: consumer, connection: connection} = state
+        %{consumer: consumer, chan: chan} = state
       ) do
-    task = ExecutionTask.build(consumer, connection, payload, tag, meta)
+    task = ExecutionTask.build(consumer, chan, payload, tag, meta)
 
     spawn(ConsumerExecutor, :consume, [task])
 
