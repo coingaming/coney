@@ -24,8 +24,7 @@ defmodule Coney.HealthCheck.StatusChecker do
 
   def handle_info(:timeout, interval) do
     ConnectionRegistry.status()
-    |> Keyword.keys()
-    |> Enum.each(fn pid ->
+    |> Enum.each(fn {pid, _} ->
       unless Process.alive?(pid) do
         ConnectionRegistry.terminated(pid)
       end
