@@ -4,6 +4,7 @@
 
 - Introduce RabbitMQ `topology` configuration and setup. Coney now starts up in two phases, first it sets up the topology (queues/exchanges) and then starts consuming from the queues. This allows more complex RabbitMQ setups like retry queues, etc.
 - Remove pooling for clusters as this should be handled on cluster side instead.
+- New option `consumer_tag` for worker `connection` settings.
 
 ### Enhancements
 
