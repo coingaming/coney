@@ -4,8 +4,7 @@ elixir:
   - 1.11.0
   - 1.12.0
 otp_release:
-  - 21.0
-  - 22.0
+  - 22.1
   - 23.0
   - 24.0
 matrix:
@@ -16,8 +15,6 @@ matrix:
       otp_release: 24.0
     - elixir: 1.11.0
       otp_release: 24.0
-    - elixir: 1.12.0
-      otp_release: 21.0
 services:
   - rabbitmq
 addons:
