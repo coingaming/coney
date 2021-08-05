@@ -37,10 +37,12 @@ defmodule Coney.RabbitConnection do
 
   def subscribe(chan, consumer_pid, consumer) do
     connection = consumer.connection
+    consumer_tag = Map.get(connection, :consumer_tag, "")
 
     Basic.qos(chan, prefetch_count: connection.prefetch_count)
 
-    {:ok, _consumer_tag} = Basic.consume(chan, connection.queue, consumer_pid)
+    {:ok, _consumer_tag} =
+      Basic.consume(chan, connection.queue, consumer_pid, consumer_tag: consumer_tag)
   end
 
   def publish(conn, exchange_name, routing_key, message) do

@@ -164,7 +164,8 @@ defmodule MyApplication.MyConsumer do
   def connection do
     %{
       prefetch_count: 10,
-      queue: "my_queue"
+      queue: "my_queue",
+      consumer_tag: "MyApp - MyConsumer" # optional
     }
   end
 
