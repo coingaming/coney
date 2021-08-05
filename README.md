@@ -78,7 +78,6 @@ Also, you can create a confuguration module (if you want to retreive settings fr
 # config/config.exs
 config :coney,
   adapter: Coney.RabbitConnection,
-  pool_size: 1,
   auto_start: true,
   settings: RabbitConfig,
   topology: RabbitConfig
