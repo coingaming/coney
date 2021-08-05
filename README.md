@@ -1,7 +1,7 @@
 # Coney
 
 [![Hex Version](http://img.shields.io/hexpm/v/coney.svg)](https://hex.pm/packages/coney)
-[![Build Status](https://travis-ci.org/llxff/coney.svg?branch=master)](https://travis-ci.org/llxff/coney)
+[![Build Status](https://travis-ci.com/llxff/coney.svg?branch=master)](https://travis-ci.com/llxff/coney)
 
 Consumer server for RabbitMQ with message publishing functionality.
 
