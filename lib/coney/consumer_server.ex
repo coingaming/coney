@@ -3,7 +3,7 @@ defmodule Coney.ConsumerServer do
 
   alias Coney.{ConsumerExecutor, ExecutionTask}
 
-  def start_link(consumer, chan) do
+  def start_link([consumer, chan]) do
     GenServer.start_link(__MODULE__, [consumer, chan])
   end
 

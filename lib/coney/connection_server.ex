@@ -12,7 +12,7 @@ defmodule Coney.ConnectionServer do
     defstruct [:consumers, :adapter, :settings, :amqp_conn, :topology]
   end
 
-  def start_link(consumers, adapter: adapter, settings: settings, topology: topology) do
+  def start_link([consumers, [adapter: adapter, settings: settings, topology: topology]]) do
     GenServer.start_link(__MODULE__, [consumers, adapter, settings, topology], name: __MODULE__)
   end
 

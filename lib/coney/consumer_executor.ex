@@ -62,9 +62,7 @@ defmodule Coney.ConsumerExecutor do
 
   defp log_error(consumer, exception) do
     Logger.error(
-      "#{consumer} (#{inspect(self())}) unhandled exception, message will be rejected: #{
-        inspect(exception)
-      }"
+      "#{consumer} (#{inspect(self())}) unhandled exception, message will be rejected: #{inspect(exception)}"
     )
   end
 end

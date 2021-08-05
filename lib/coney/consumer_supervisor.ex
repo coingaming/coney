@@ -1,19 +1,16 @@
 defmodule Coney.ConsumerSupervisor do
-  use Supervisor
+  use DynamicSupervisor
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(_args) do
+    DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   def init([]) do
-    children = [
-      worker(Coney.ConsumerServer, [])
-    ]
-
-    supervise(children, strategy: :simple_one_for_one)
+    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
   def start_consumer(consumer, chan) do
-    Supervisor.start_child(__MODULE__, [consumer, chan])
+    spec = {Coney.ConsumerServer, [consumer, chan]}
+    DynamicSupervisor.start_child(__MODULE__, spec)
   end
 end
