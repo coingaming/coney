@@ -1,3 +1,8 @@
+
+## [3.0.1]
+
+- Updated dependencies (`amqp`) #16
+
 ## [3.0.0]
 
 ### Changes
