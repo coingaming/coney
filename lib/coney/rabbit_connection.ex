@@ -21,6 +21,10 @@ defmodule Coney.RabbitConnection do
     end
   end
 
+  def close(conn) do
+    Connection.close(conn)
+  end
+
   defp connect(url) do
     url
     |> choose_server()
@@ -33,6 +37,10 @@ defmodule Coney.RabbitConnection do
   def create_channel(conn) do
     {:ok, chan} = Channel.open(conn)
     chan
+  end
+
+  def close_channel(chan) do
+    Channel.close(chan)
   end
 
   def subscribe(chan, consumer_pid, consumer) do

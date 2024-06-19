@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :coney,
   adapter: Coney.RabbitConnection,
@@ -10,4 +10,4 @@ config :coney,
   },
   workers: []
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

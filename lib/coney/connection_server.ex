@@ -50,7 +50,8 @@ defmodule Coney.ConnectionServer do
     rabbitmq_connect(state)
   end
 
-  def terminate(_reason, _state) do
+  def terminate(_reason, %{amqp_conn: conn, adapter: adapter} = _state) do
+    :ok = adapter.close(conn)
     ConnectionRegistry.terminated(self())
   end
 

@@ -8,23 +8,6 @@ defmodule Coney.ConsumerExecutor do
     |> consumer.parse(meta)
     |> consumer.process(meta)
     |> handle_result(task)
-  rescue
-    exception ->
-      cond do
-        function_exported?(consumer, :error_happened, 3) ->
-          exception
-          |> consumer.error_happened(payload, meta)
-          |> handle_result(task)
-
-        function_exported?(consumer, :error_happened, 4) ->
-          exception
-          |> consumer.error_happened(System.stacktrace(), payload, meta)
-          |> handle_result(task)
-
-        true ->
-          log_error(consumer, exception)
-          reject(task)
-      end
   end
 
   defp handle_result(:ok, task), do: ack(task)
@@ -58,11 +41,5 @@ defmodule Coney.ConsumerExecutor do
 
   defp send_message(exchange, response) do
     send_message(exchange, {"", response})
-  end
-
-  defp log_error(consumer, exception) do
-    Logger.error(
-      "#{consumer} (#{inspect(self())}) unhandled exception, message will be rejected: #{inspect(exception)}"
-    )
   end
 end
