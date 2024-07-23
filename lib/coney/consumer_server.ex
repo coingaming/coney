@@ -52,7 +52,7 @@ defmodule Coney.ConsumerServer do
 
   # Received if the task terminate abnormally
   def handle_info({:DOWN, ref, _, _, reason}, state) do
-    Logger.info("[#{__MODULE__}] Error processing message with reason: #{inspect(reason)}")
+    Logger.error("[#{__MODULE__}] Error processing message with reason: #{inspect(reason)}")
     {task, state} = pop_in(state.tasks[ref])
     # Reject message
     reject(task)
