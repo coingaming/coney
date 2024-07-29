@@ -282,7 +282,7 @@ Connection status can be:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/llxff/coney.
+Bug reports and pull requests are welcome on GitHub at https://github.com/coingaming/coney.
 
 ### Running test suite locally
 1. Start the RabbitMQ instance via `docker compose up`.
