@@ -26,6 +26,7 @@ jobs:
     name: Test on OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       matrix:
+        # TODO: Add all the OTP and Elixir versions we plan to support
         otp: ['26.1']
         elixir: ['1.15.7']
     steps:
@@ -69,6 +70,10 @@ jobs:
 
     - name: Check Formatting
       run: mix format --check-formatted
+
+    # TODO: Enable credo later
+    # - name: Run credo
+    #   run: mix credo
 
     - name: Run tests
       run: mix test

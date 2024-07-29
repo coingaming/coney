@@ -284,6 +284,10 @@ Connection status can be:
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/llxff/coney.
 
+### Running test suite locally
+1. Start the RabbitMQ instance via `docker compose up`.
+2. Run `mix test`.
+
 ## License
 
 The library is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
