@@ -6,7 +6,7 @@ defmodule ConsumerServerTest do
   setup do
     [
       args: [FakeConsumer, :channel],
-      state: %{consumer: FakeConsumer, chan: :channel}
+      state: %{consumer: FakeConsumer, chan: :channel, tasks: %{}}
     ]
   end
 
@@ -33,6 +33,9 @@ defmodule ConsumerServerTest do
     message =
       {:basic_deliver, :ok, %{delivery_tag: :tag, redelivered: :redelivered, routing_key: ""}}
 
-    assert {:noreply, ^state} = ConsumerServer.handle_info(message, state)
+    {:noreply, updated_state} = ConsumerServer.handle_info(message, state)
+
+    assert updated_state.consumer == state.consumer
+    assert updated_state.chan == state.chan
   end
 end
