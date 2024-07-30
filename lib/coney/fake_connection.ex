@@ -1,4 +1,6 @@
 defmodule Coney.FakeConnection do
+  @behaviour Coney.Connection
+
   def open(_) do
     :conn
   end
