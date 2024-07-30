@@ -1,7 +1,7 @@
 # Coney
 
-[![Hex Version](http://img.shields.io/hexpm/v/coney.svg)](https://hex.pm/packages/coney)
-[![Build Status](https://app.travis-ci.com/llxff/coney.svg?branch=main)](https://app.travis-ci.com/github/llxff/coney)
+[![Hex.pm Version](https://img.shields.io/hexpm/v/coney)](https://hex.pm/packages/coney)
+![Build Status](https://github.com/coingaming/coney/actions/workflows/ci.yaml/badge.svg)
 
 Consumer server for RabbitMQ with message publishing functionality.
 
@@ -282,7 +282,11 @@ Connection status can be:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/llxff/coney.
+Bug reports and pull requests are welcome on GitHub at https://github.com/coingaming/coney.
+
+### Running test suite locally
+1. Start the RabbitMQ instance via `docker compose up`.
+2. Run `mix test`.
 
 ## License
 
