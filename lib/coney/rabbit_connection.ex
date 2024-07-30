@@ -1,6 +1,8 @@
 defmodule Coney.RabbitConnection do
   use AMQP
 
+  @behaviour Coney.Connection
+
   require Logger
 
   def open(%{url: url, timeout: timeout} = settings) do
