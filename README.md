@@ -291,3 +291,14 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/coinga
 ## License
 
 The library is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+
+## Architecture
+```mermaid
+  graph TD;
+      A[ApplicationSupervisor] --> B[ConsumerSupervisor];
+      A --> C[ConnectionServer (GenServer)];
+      C -- sends requests to start consumers --> B;
+      B -- dynamic supervisor of multiple -->D[ConsumerServer (GenServer)];
+      D -- monitors --> E[ConsumerExecutor];
+      E -- sends messages to --> C;
+```
