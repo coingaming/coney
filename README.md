@@ -296,9 +296,9 @@ The library is available as open source under the terms of the [MIT License](htt
 ```mermaid
   graph TD;
       A[ApplicationSupervisor] --> B[ConsumerSupervisor];
-      A --> C[ConnectionServer (GenServer)];
+      A --> C[ConnectionServer - GenServer];
       C -- sends requests to start consumers --> B;
-      B -- dynamic supervisor of multiple -->D[ConsumerServer (GenServer)];
+      B -- dynamic supervisor of multiple -->D[ConsumerServer - GenServer];
       D -- monitors --> E[ConsumerExecutor];
       E -- sends messages to --> C;
 ```
