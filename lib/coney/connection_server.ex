@@ -118,14 +118,14 @@ defmodule Coney.ConnectionServer do
     consumers
     |> Enum.map(fn consumer ->
       subscribe_chan = adapter.create_channel(conn)
-      chan_ref = :erlang.make_ref()
+      channel_ref = :erlang.make_ref()
 
-      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, chan_ref)
+      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, channel_ref)
       adapter.subscribe(subscribe_chan, pid, consumer)
 
       Logger.debug("#{inspect(consumer)} (#{inspect(pid)}) started")
 
-      {chan_ref, subscribe_chan}
+      {channel_ref, subscribe_chan}
     end)
     |> Map.new()
   end
