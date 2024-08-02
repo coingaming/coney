@@ -9,10 +9,12 @@ defmodule Coney.ConsumerServer do
     GenServer.start_link(__MODULE__, [consumer, chan])
   end
 
+  @impl GenServer
   def init([consumer, chan]) do
     {:ok, %{consumer: consumer, chan: chan, tasks: %{}}}
   end
 
+  @impl GenServer
   def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, state) do
     {:noreply, state}
   end

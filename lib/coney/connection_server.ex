@@ -16,6 +16,7 @@ defmodule Coney.ConnectionServer do
     GenServer.start_link(__MODULE__, [consumers, adapter, settings, topology], name: __MODULE__)
   end
 
+  @impl GenServer
   def init([consumers, adapter, settings, topology]) do
     send(self(), :after_init)
 
@@ -40,6 +41,7 @@ defmodule Coney.ConnectionServer do
     GenServer.call(__MODULE__, {:publish, exchange_name, routing_key, message})
   end
 
+  @impl GenServer
   def handle_info(:after_init, state) do
     rabbitmq_connect(state)
   end
@@ -50,11 +52,13 @@ defmodule Coney.ConnectionServer do
     rabbitmq_connect(state)
   end
 
+  @impl GenServer
   def terminate(_reason, %State{amqp_conn: conn, adapter: adapter} = _state) do
     :ok = adapter.close(conn)
     ConnectionRegistry.terminated(self())
   end
 
+  @impl GenServer
   def handle_call({:confirm, channel, tag}, _from, %State{adapter: adapter} = state) do
     adapter.confirm(channel, tag)
 

@@ -14,6 +14,7 @@ defmodule Coney.ApplicationSupervisor do
     }
   end
 
+  @impl Supervisor
   def init([consumers]) do
     settings = settings()
 
