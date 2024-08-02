@@ -9,7 +9,7 @@ defmodule Coney.ConnectionServer do
   }
 
   defmodule State do
-    defstruct [:consumers, :adapter, :settings, :amqp_conn, :topology]
+    defstruct [:consumers, :adapter, :settings, :amqp_conn, :topology, :channels]
   end
 
   def start_link([consumers, [adapter: adapter, settings: settings, topology: topology]]) do
@@ -25,12 +25,12 @@ defmodule Coney.ConnectionServer do
     {:ok, %State{consumers: consumers, adapter: adapter, settings: settings, topology: topology}}
   end
 
-  def confirm(channel, tag) do
-    GenServer.call(__MODULE__, {:confirm, channel, tag})
+  def confirm(channel_ref, tag) do
+    GenServer.call(__MODULE__, {:confirm, channel_ref, tag})
   end
 
-  def reject(channel, tag, requeue) do
-    GenServer.call(__MODULE__, {:reject, channel, tag, requeue})
+  def reject(channel_ref, tag, requeue) do
+    GenServer.call(__MODULE__, {:reject, channel_ref, tag, requeue})
   end
 
   def publish(exchange_name, message) do
@@ -59,13 +59,23 @@ defmodule Coney.ConnectionServer do
   end
 
   @impl GenServer
-  def handle_call({:confirm, channel, tag}, _from, %State{adapter: adapter} = state) do
+  def handle_call(
+        {:confirm, channel_ref, tag},
+        _from,
+        %State{adapter: adapter, channels: channels} = state
+      ) do
+    channel = channel_from_ref(channels, channel_ref)
     adapter.confirm(channel, tag)
 
     {:reply, :confirmed, state}
   end
 
-  def handle_call({:reject, channel, tag, requeue}, _from, %State{adapter: adapter} = state) do
+  def handle_call(
+        {:reject, channel_ref, tag, requeue},
+        _from,
+        %State{adapter: adapter, channels: channels} = state
+      ) do
+    channel = channel_from_ref(channels, channel_ref)
     adapter.reject(channel, tag, requeue: requeue)
 
     {:reply, :rejected, state}
@@ -97,21 +107,28 @@ defmodule Coney.ConnectionServer do
        ) do
     conn = adapter.open(settings)
     adapter.init_topology(conn, topology)
-    start_consumers(consumers, adapter, conn)
+    channels = start_consumers(consumers, adapter, conn)
 
     ConnectionRegistry.connected(self())
 
-    {:noreply, %State{state | amqp_conn: conn}}
+    {:noreply, %State{state | amqp_conn: conn, channels: channels}}
   end
 
   defp start_consumers(consumers, adapter, conn) do
-    Enum.each(consumers, fn consumer ->
+    consumers
+    |> Enum.map(fn consumer ->
       subscribe_chan = adapter.create_channel(conn)
+      chan_ref = :erlang.make_ref()
 
-      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, subscribe_chan)
+      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, chan_ref)
       adapter.subscribe(subscribe_chan, pid, consumer)
 
       Logger.debug("#{inspect(consumer)} (#{inspect(pid)}) started")
+
+      {chan_ref, subscribe_chan}
     end)
+    |> Map.new()
   end
+
+  defp channel_from_ref(channels, channel_ref), do: Map.fetch!(channels, channel_ref)
 end
