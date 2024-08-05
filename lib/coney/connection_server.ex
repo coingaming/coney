@@ -6,27 +6,20 @@ defmodule Coney.ConnectionServer do
   alias Coney.HealthCheck.ConnectionRegistry
 
   defmodule State do
-    defstruct [:consumers, :adapter, :settings, :amqp_conn, :topology, :channels]
+    defstruct [:adapter, :settings, :amqp_conn, :topology, :channels]
   end
 
-  def start_link([consumers, [adapter: adapter, settings: settings, topology: topology]]) do
-    GenServer.start_link(__MODULE__, [consumers, adapter, settings, topology], name: __MODULE__)
+  def start_link([[adapter: adapter, settings: settings, topology: topology]]) do
+    GenServer.start_link(__MODULE__, [adapter, settings, topology], name: __MODULE__)
   end
 
   @impl GenServer
-  def init([consumers, adapter, settings, topology]) do
+  def init([adapter, settings, topology]) do
     send(self(), :after_init)
 
     ConnectionRegistry.associate(self())
 
-    {:ok,
-     %State{
-       consumers: consumers,
-       adapter: adapter,
-       settings: settings,
-       topology: topology,
-       channels: Map.new()
-     }}
+    {:ok, %State{adapter: adapter, settings: settings, topology: topology, channels: Map.new()}}
   end
 
   def confirm(channel_ref, tag) do

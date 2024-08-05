@@ -19,7 +19,7 @@ defmodule Coney.ApplicationSupervisor do
     settings = settings()
 
     children = [
-      {ConnectionServer, [consumers, settings]},
+      {ConnectionServer, [settings]},
       {ConsumerSupervisor, [consumers]}
     ]
 
