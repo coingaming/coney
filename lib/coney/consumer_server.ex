@@ -5,12 +5,14 @@ defmodule Coney.ConsumerServer do
 
   require Logger
 
-  def start_link([consumer, chan]) do
-    GenServer.start_link(__MODULE__, [consumer, chan])
+  def start_link([consumer]) do
+    GenServer.start_link(__MODULE__, [consumer])
   end
 
   @impl GenServer
-  def init([consumer, chan]) do
+  def init([consumer]) do
+    chan = ConnectionServer.subscribe(consumer)
+
     {:ok, %{consumer: consumer, chan: chan, tasks: %{}}}
   end
 

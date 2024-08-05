@@ -5,13 +5,16 @@ defmodule ConsumerServerTest do
 
   setup do
     [
-      args: [FakeConsumer, :channel],
-      state: %{consumer: FakeConsumer, chan: :channel, tasks: %{}}
+      args: [FakeConsumer],
+      state: %{consumer: FakeConsumer, tasks: %{}, chan: :erlang.make_ref()}
     ]
   end
 
   test "initial state", %{args: args, state: state} do
-    assert {:ok, ^state} = ConsumerServer.init(args)
+    assert {:ok, initial_state} = ConsumerServer.init(args)
+    assert initial_state.consumer == state.consumer
+    assert initial_state.tasks |> Map.equal?(Map.new())
+    assert initial_state.chan |> is_reference()
   end
 
   test ":basic_consume_ok", %{state: state} do

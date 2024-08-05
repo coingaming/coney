@@ -3,10 +3,7 @@ defmodule Coney.ConnectionServer do
 
   require Logger
 
-  alias Coney.{
-    ConsumerSupervisor,
-    HealthCheck.ConnectionRegistry
-  }
+  alias Coney.HealthCheck.ConnectionRegistry
 
   defmodule State do
     defstruct [:consumers, :adapter, :settings, :amqp_conn, :topology, :channels]
@@ -22,7 +19,14 @@ defmodule Coney.ConnectionServer do
 
     ConnectionRegistry.associate(self())
 
-    {:ok, %State{consumers: consumers, adapter: adapter, settings: settings, topology: topology}}
+    {:ok,
+     %State{
+       consumers: consumers,
+       adapter: adapter,
+       settings: settings,
+       topology: topology,
+       channels: Map.new()
+     }}
   end
 
   def confirm(channel_ref, tag) do
@@ -41,15 +45,19 @@ defmodule Coney.ConnectionServer do
     GenServer.call(__MODULE__, {:publish, exchange_name, routing_key, message})
   end
 
+  def subscribe(consumer) do
+    GenServer.call(__MODULE__, {:subscribe, consumer})
+  end
+
   @impl GenServer
   def handle_info(:after_init, state) do
-    rabbitmq_connect(state)
+    {:noreply, rabbitmq_connect(state)}
   end
 
   def handle_info({:DOWN, _, :process, _pid, reason}, state) do
     ConnectionRegistry.disconnected(self())
     Logger.error("#{__MODULE__} (#{inspect(self())}) connection lost: #{inspect(reason)}")
-    rabbitmq_connect(state)
+    {:noreply, state |> rabbitmq_connect() |> update_channels()}
   end
 
   @impl GenServer
@@ -68,6 +76,22 @@ defmodule Coney.ConnectionServer do
     adapter.confirm(channel, tag)
 
     {:reply, :confirmed, state}
+  end
+
+  def handle_call(
+        {:subscribe, consumer},
+        {consumer_pid, _tag},
+        %State{amqp_conn: conn, adapter: adapter, channels: channels} = state
+      ) do
+    channel = adapter.create_channel(conn)
+    channel_ref = :erlang.make_ref()
+
+    adapter.subscribe(channel, consumer_pid, consumer)
+
+    new_channels = Map.put(channels, channel_ref, {consumer_pid, consumer, channel})
+
+    Logger.debug("#{inspect(consumer)} (#{inspect(consumer_pid)}) started")
+    {:reply, channel_ref, %State{state | channels: new_channels}}
   end
 
   def handle_call(
@@ -99,7 +123,6 @@ defmodule Coney.ConnectionServer do
 
   defp rabbitmq_connect(
          %State{
-           consumers: consumers,
            adapter: adapter,
            settings: settings,
            topology: topology
@@ -107,28 +130,28 @@ defmodule Coney.ConnectionServer do
        ) do
     conn = adapter.open(settings)
     adapter.init_topology(conn, topology)
-    channels = start_consumers(consumers, adapter, conn)
 
     ConnectionRegistry.connected(self())
 
-    {:noreply, %State{state | amqp_conn: conn, channels: channels}}
+    %State{state | amqp_conn: conn}
   end
 
-  defp start_consumers(consumers, adapter, conn) do
-    consumers
-    |> Enum.map(fn consumer ->
-      subscribe_chan = adapter.create_channel(conn)
-      channel_ref = :erlang.make_ref()
+  defp channel_from_ref(channels, channel_ref) do
+    {_consumer_pid, _consumer, channel} = Map.fetch!(channels, channel_ref)
 
-      {:ok, pid} = ConsumerSupervisor.start_consumer(consumer, channel_ref)
-      adapter.subscribe(subscribe_chan, pid, consumer)
-
-      Logger.debug("#{inspect(consumer)} (#{inspect(pid)}) started")
-
-      {channel_ref, subscribe_chan}
-    end)
-    |> Map.new()
+    channel
   end
 
-  defp channel_from_ref(channels, channel_ref), do: Map.fetch!(channels, channel_ref)
+  defp update_channels(%State{amqp_conn: conn, adapter: adapter, channels: channels} = state) do
+    new_channels =
+      Enum.map(channels, fn {channel_ref, {consumer_pid, consumer, _dead_channel}} ->
+        new_channel = adapter.create_channel(conn)
+        adapter.subscribe(new_channel, consumer_pid, consumer)
+
+        {channel_ref, {consumer_pid, consumer, new_channel}}
+      end)
+      |> Map.new()
+
+    %State{state | channels: new_channels}
+  end
 end
