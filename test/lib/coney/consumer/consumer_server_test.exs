@@ -41,4 +41,22 @@ defmodule ConsumerServerTest do
     assert updated_state.consumer == state.consumer
     assert updated_state.chan == state.chan
   end
+
+  describe "handle_info/2" do
+    setup do
+      %{state: %{consumer: FakeConsumer, tasks: Map.new(), chan: :erlang.make_ref()}}
+    end
+
+    test "demonitors a task once it completes successfully", %{state: state} do
+      task_ref = :erlang.make_ref()
+      state = put_in(state, [:tasks, task_ref], 1)
+
+      refute state[:tasks] |> Map.equal?(Map.new())
+
+      down_msg = {:DOWN, task_ref, :dont_care, :dont_care, :normal}
+
+      assert {:noreply, new_state} = ConsumerServer.handle_info(down_msg, state)
+      assert new_state[:tasks] |> Map.equal?(Map.new())
+    end
+  end
 end
