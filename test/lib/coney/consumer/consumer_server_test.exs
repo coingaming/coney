@@ -58,5 +58,17 @@ defmodule ConsumerServerTest do
       assert {:noreply, new_state} = ConsumerServer.handle_info(down_msg, state)
       assert new_state[:tasks] |> Map.equal?(Map.new())
     end
+
+    test "demonitors a task and rejects message if it terminates abruptly", %{state: state} do
+      task_ref = :erlang.make_ref()
+
+      state = put_in(state, [:tasks, task_ref], 1)
+
+      down_msg = {:DOWN, task_ref, :dont_care, :dont_care, :error}
+
+      assert {:noreply, new_state} = ConsumerServer.handle_info(down_msg, state)
+
+      assert new_state[:tasks] |> Map.equal?(Map.new())
+    end
   end
 end
