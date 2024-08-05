@@ -37,7 +37,7 @@ defmodule Coney.Mixfile do
     """
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "test/support"]
 
   defp elixirc_paths(_), do: ["lib"]
 
@@ -47,7 +47,7 @@ defmodule Coney.Mixfile do
       files: ["lib", "mix.exs", "README.md", "LICENSE.txt"],
       maintainers: ["Aleksandr Fomin"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/llxff/coney"}
+      links: %{"GitHub" => "https://github.com/coingaming/coney"}
     ]
   end
 end

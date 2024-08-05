@@ -8,4 +8,6 @@ config :coney,
     url: "amqp://guest:guest@localhost:5672",
     timeout: 1000
   },
-  workers: []
+  workers: [
+    FakeConsumer
+  ]

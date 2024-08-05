@@ -19,8 +19,8 @@ defmodule Coney.ApplicationSupervisor do
     settings = settings()
 
     children = [
-      {ConsumerSupervisor, [consumers]},
-      {ConnectionServer, [consumers, settings]}
+      {ConnectionServer, [consumers, settings]},
+      {ConsumerSupervisor, [consumers]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
