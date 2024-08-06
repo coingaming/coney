@@ -20,9 +20,9 @@ jobs:
         image: "rabbitmq:alpine"
         ports:
           - "5672:5672"
-      volumes:
-        - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-        - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+        volumes:
+          - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+          - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
 
 
     runs-on: ubuntu-latest
