@@ -26,6 +26,16 @@
       "arguments": {}
     }
   ],
-  "exchanges": [],
+  "exchanges": [
+    {
+      "name": "exchange",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
   "bindings": []
 }
