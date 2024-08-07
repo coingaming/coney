@@ -10,7 +10,20 @@ config :coney,
   },
   workers: [
     FakeConsumer
-  ]
+  ],
+  topology: %{
+    exchanges: [{:topic, "exchange", durable: false}],
+    queues: %{
+      "queue" => %{
+        options: [
+          durable: false
+        ],
+        bindings: [
+          [exchange: "exchange", options: [routing_key: "queue"]]
+        ]
+      }
+    }
+  }
 
 config :logger, level: :info
 
