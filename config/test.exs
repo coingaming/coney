@@ -1,6 +1,19 @@
 import Config
 
 config :coney,
+  topology: %{
+    exchanges: [{:topic, "exchange", durable: false}],
+    queues: %{
+      "queue" => %{
+        options: [
+          durable: false
+        ],
+        bindings: [
+          [exchange: "exchange", options: [routing_key: "queue"]]
+        ]
+      }
+    }
+  },
   adapter: Coney.RabbitConnection,
   pool_size: 1,
   auto_start: true,

@@ -20,11 +20,6 @@ jobs:
         image: "rabbitmq:alpine"
         ports:
           - "5672:5672"
-        volumes:
-          - ${{ github.workspace }}/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-          - ${{ github.workspace }}/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
-        options: --name rabbitmq
-
 
     runs-on: ubuntu-latest
     name: Test on OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
@@ -42,12 +37,6 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Restart RabbitMQ
-      # Restart RabbitMQ after volumes have been checked out
-      uses: docker://docker
-      with:
-        args: docker restart rabbitmq
 
     - name: Cache deps
       id: cache-deps
