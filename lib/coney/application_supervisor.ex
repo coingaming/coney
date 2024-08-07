@@ -1,4 +1,10 @@
 defmodule Coney.ApplicationSupervisor do
+  @moduledoc """
+  Supervisor responsible of `ConnectionServer` and `ConsumerSupervisor`.
+
+  Main entry point of the application.
+  """
+
   use Supervisor
 
   alias Coney.{ConsumerSupervisor, ConnectionServer}

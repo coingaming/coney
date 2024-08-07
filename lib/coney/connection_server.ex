@@ -1,4 +1,18 @@
 defmodule Coney.ConnectionServer do
+  @moduledoc """
+  Handles connections between `ConsumerServer` and the RabbitMQ instance(s).
+
+  This module abstracts away the connection status of RabbitMQ. Instead, when
+  a new `ConsumerServer` is started, it requests `ConnectionServer` to open a channel.
+  ConnectionServer opens a real amqp channel, keeps a reference to it in its state and
+  returns an erlang reference to `ConsumerServer`. When `ConsumerServer` replies (ack/reject)
+  an incoming RabbitMQ message it sends the erlang reference to ConnectionServer and then
+  ConnectionServer looks up the real channel.
+
+  ConnectionServer can handle RabbitMQ disconnects independently of ConsumerServer.
+  When connection is lost and then regained, ConnectionServer simply updates its
+  map of {erlang_ref, AMQP.Connection}, ConsumerServer keeps using the same erlang_ref.
+  """
   use GenServer
 
   require Logger

@@ -1,4 +1,9 @@
 defmodule Coney.ConsumerServer do
+  @moduledoc """
+  GenServer for handling RabbitMQ messages. Spawns and monitors one task per message
+  and forwards the response to `ConnectionServer`.
+  """
+
   use GenServer
 
   alias Coney.{ConnectionServer, ConsumerExecutor, ExecutionTask}

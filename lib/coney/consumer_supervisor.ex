@@ -1,4 +1,7 @@
 defmodule Coney.ConsumerSupervisor do
+  @moduledoc """
+  Supervisor for all ConsumerServer of the application.
+  """
   use Supervisor
 
   alias Coney.ConsumerServer

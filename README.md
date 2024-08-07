@@ -288,6 +288,16 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/coinga
 1. Start the RabbitMQ instance via `docker compose up`.
 2. Run `mix test`.
 
+## Architecture
+```mermaid
+  graph TD;
+      A[ApplicationSupervisor - Supervisor] --> B[ConsumerSupervisor - Supervisor];
+      A --> C[ConnectionServer - GenServer];
+      B -- supervises many --> D[ConsumerServer - GenServer];
+      D -- monitors --> E[ConsumerExecutor];
+      E -- sends messages to --> C;
+```
+
 ## License
 
 The library is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
