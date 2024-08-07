@@ -29,11 +29,15 @@ defmodule Coney.ConnectionServer do
 
   @impl GenServer
   def init([adapter, settings, topology]) do
-    send(self(), :after_init)
-
     ConnectionRegistry.associate(self())
 
-    {:ok, %State{adapter: adapter, settings: settings, topology: topology, channels: Map.new()}}
+    {:ok, %State{adapter: adapter, settings: settings, topology: topology, channels: Map.new()},
+     {:continue, nil}}
+  end
+
+  @impl true
+  def handle_continue(_continue_arg, state) do
+    {:noreply, rabbitmq_connect(state)}
   end
 
   def confirm(channel_ref, tag) do
@@ -89,7 +93,8 @@ defmodule Coney.ConnectionServer do
         {:subscribe, consumer},
         {consumer_pid, _tag},
         %State{amqp_conn: conn, adapter: adapter, channels: channels} = state
-      ) do
+      )
+      when not is_nil(conn) do
     channel = adapter.create_channel(conn)
     channel_ref = :erlang.make_ref()
 

@@ -14,7 +14,7 @@ defmodule Coney.ConnectionServerTest do
     test "starts with default settings", %{init_args: init_args} do
       %{settings: settings, adapter: adapter, topology: topology} = init_args
 
-      assert {:ok, state} = ConnectionServer.init([adapter, settings, topology])
+      assert {:ok, state, {:continue, nil}} = ConnectionServer.init([adapter, settings, topology])
 
       assert state.channels |> Map.equal?(Map.new())
       assert state.adapter == adapter
@@ -22,18 +22,10 @@ defmodule Coney.ConnectionServerTest do
       assert state.topology == topology
     end
 
-    test "sends itself an after_init message", %{init_args: init_args} do
-      %{settings: settings, adapter: adapter, topology: topology} = init_args
-
-      assert {:ok, _state} = ConnectionServer.init([adapter, settings, topology])
-
-      assert_receive :after_init
-    end
-
     test "registers itself in the connection registry", %{init_args: init_args} do
       %{settings: settings, adapter: adapter, topology: topology} = init_args
 
-      assert {:ok, _state} = ConnectionServer.init([adapter, settings, topology])
+      assert {:ok, _state, {:continue, nil}} = ConnectionServer.init([adapter, settings, topology])
 
       status = Coney.HealthCheck.ConnectionRegistry.status() |> Map.new()
 
@@ -41,14 +33,14 @@ defmodule Coney.ConnectionServerTest do
     end
   end
 
-  describe "after_init/1" do
+  describe "handle_continue/2" do
     test "sets the connection in the state", %{init_args: init_args} do
       %{settings: settings, adapter: adapter, topology: topology} = init_args
-      assert {:ok, state} = ConnectionServer.init([adapter, settings, topology])
+      assert {:ok, state, {:continue, nil}} = ConnectionServer.init([adapter, settings, topology])
 
       assert is_nil(state.amqp_conn)
 
-      assert {:noreply, new_state} = ConnectionServer.handle_info(:after_init, state)
+      assert {:noreply, new_state} = ConnectionServer.handle_continue(nil, state)
 
       refute is_nil(new_state.amqp_conn)
     end
@@ -58,7 +50,7 @@ defmodule Coney.ConnectionServerTest do
     test "reconnects channels when receives a connection lost message", %{init_args: init_args} do
       %{settings: settings, adapter: adapter, topology: topology} = init_args
       # Init
-      assert {:ok, state} = ConnectionServer.init([adapter, settings, topology])
+      assert {:ok, state, {:continue, nil}} = ConnectionServer.init([adapter, settings, topology])
 
       # Open connection
       assert {:noreply, state} = ConnectionServer.handle_info(:after_init, state)
@@ -91,7 +83,7 @@ defmodule Coney.ConnectionServerTest do
     test "subscribes a consumer and returns a channel reference", %{init_args: init_args} do
       %{settings: settings, adapter: adapter, topology: topology} = init_args
       # Init
-      assert {:ok, state} = ConnectionServer.init([adapter, settings, topology])
+      assert {:ok, state, {:continue, nil}} = ConnectionServer.init([adapter, settings, topology])
 
       # Open connection
       assert {:noreply, state} = ConnectionServer.handle_info(:after_init, state)
