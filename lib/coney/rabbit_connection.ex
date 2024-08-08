@@ -7,8 +7,6 @@ defmodule Coney.RabbitConnection do
     case connect(url) do
       {:ok, conn} ->
         Logger.debug("#{__MODULE__} (#{inspect(self())}) connected to #{url}")
-
-        Process.monitor(conn.pid)
         conn
 
       {:error, error} ->

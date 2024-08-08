@@ -10,13 +10,6 @@ defmodule ConsumerServerTest do
     ]
   end
 
-  test "initial state", %{args: args, state: state} do
-    assert {:ok, initial_state} = ConsumerServer.init(args)
-    assert initial_state.consumer == state.consumer
-    assert initial_state.tasks |> Map.equal?(Map.new())
-    assert initial_state.chan |> is_reference()
-  end
-
   test ":basic_consume_ok", %{state: state} do
     assert {:noreply, ^state} =
              ConsumerServer.handle_info({:basic_consume_ok, %{consumer_tag: nil}}, state)

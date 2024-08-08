@@ -66,10 +66,6 @@ defmodule Coney.ConnectionServer do
   end
 
   @impl GenServer
-  def handle_info(:after_init, state) do
-    {:noreply, rabbitmq_connect(state)}
-  end
-
   def handle_info({:DOWN, _, :process, _pid, reason}, state) do
     ConnectionRegistry.disconnected(self())
     Logger.error("#{__MODULE__} (#{inspect(self())}) connection lost: #{inspect(reason)}")
@@ -146,6 +142,7 @@ defmodule Coney.ConnectionServer do
          } = state
        ) do
     conn = adapter.open(settings)
+    Process.monitor(conn.pid)
     adapter.init_topology(conn, topology)
 
     ConnectionRegistry.connected(self())
@@ -175,7 +172,7 @@ defmodule Coney.ConnectionServer do
 
   defp close_channels(channels, adapter) do
     Enum.each(channels, fn {_channel_ref, {consumer_pid, consumer, channel}} ->
-      Logger.info("[Coney] - Closing channel for #{inspect(consumer)} (#{consumer_pid})")
+      Logger.info("[Coney] - Closing channel for #{inspect(consumer)} (#{inspect(consumer_pid)})")
       adapter.close_channel(channel)
     end)
   end

@@ -53,7 +53,7 @@ defmodule Coney.ConnectionServerTest do
       assert {:ok, state, {:continue, nil}} = ConnectionServer.init([adapter, settings, topology])
 
       # Open connection
-      assert {:noreply, state} = ConnectionServer.handle_info(:after_init, state)
+      assert {:noreply, state} = ConnectionServer.handle_continue(nil, state)
 
       # Subscribe a channel
       assert {:reply, channel_ref, connected_state} =
@@ -86,7 +86,7 @@ defmodule Coney.ConnectionServerTest do
       assert {:ok, state, {:continue, nil}} = ConnectionServer.init([adapter, settings, topology])
 
       # Open connection
-      assert {:noreply, state} = ConnectionServer.handle_info(:after_init, state)
+      assert {:noreply, state} = ConnectionServer.handle_continue(nil, state)
 
       # Subscribe a channel
       assert {:reply, channel_ref, new_state} =
