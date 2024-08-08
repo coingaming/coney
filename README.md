@@ -296,6 +296,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/coinga
       B -- supervises many --> D[ConsumerServer - GenServer];
       D -- monitors --> E[ConsumerExecutor];
       E -- sends messages to --> C;
+      D -- opens AMQP conns via --> C;
 ```
 
 ## License
