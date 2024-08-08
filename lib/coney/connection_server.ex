@@ -40,22 +40,27 @@ defmodule Coney.ConnectionServer do
     {:noreply, rabbitmq_connect(state)}
   end
 
+  @spec confirm(reference(), any()) :: :confirmed
   def confirm(channel_ref, tag) do
     GenServer.call(__MODULE__, {:confirm, channel_ref, tag})
   end
 
+  @spec reject(reference(), any(), boolean()) :: :rejected
   def reject(channel_ref, tag, requeue) do
     GenServer.call(__MODULE__, {:reject, channel_ref, tag, requeue})
   end
 
+  @spec publish(String.t(), any()) :: :published
   def publish(exchange_name, message) do
     GenServer.call(__MODULE__, {:publish, exchange_name, message})
   end
 
+  @spec publish(String.t(), String.t(), any()) :: :published
   def publish(exchange_name, routing_key, message) do
     GenServer.call(__MODULE__, {:publish, exchange_name, routing_key, message})
   end
 
+  @spec subscribe(any()) :: reference()
   def subscribe(consumer) do
     GenServer.call(__MODULE__, {:subscribe, consumer})
   end

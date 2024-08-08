@@ -1,5 +1,7 @@
 services:
   rabbitmq:
+    # "management" version is not required, but it makes
+    # manual testing easier
     image: "rabbitmq:3.12-management-alpine"
     ports:
       - "5672:5672"
