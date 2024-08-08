@@ -4,10 +4,19 @@ defmodule ConsumerServerTest do
   alias Coney.ConsumerServer
 
   setup do
+    ref = Coney.ConnectionServer.subscribe(FakeConsumer)
+
     [
       args: [FakeConsumer],
-      state: %{consumer: FakeConsumer, tasks: %{}, chan: :erlang.make_ref()}
+      state: %{consumer: FakeConsumer, tasks: %{}, chan: ref}
     ]
+  end
+
+  test "initial state", %{args: args, state: state} do
+    assert {:ok, initial_state} = ConsumerServer.init(args)
+    assert initial_state.consumer == state.consumer
+    assert initial_state.tasks |> Map.equal?(Map.new())
+    assert initial_state.chan |> is_reference()
   end
 
   test ":basic_consume_ok", %{state: state} do
