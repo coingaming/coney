@@ -74,6 +74,7 @@ defmodule Coney.ConnectionServer do
 
   @impl GenServer
   def terminate(_reason, %State{amqp_conn: conn, adapter: adapter, channels: channels} = _state) do
+    Logger.info("[Coney] - Terminating #{inspect(conn)}")
     close_channels(channels, adapter)
     :ok = adapter.close(conn)
     ConnectionRegistry.terminated(self())
@@ -162,18 +163,19 @@ defmodule Coney.ConnectionServer do
         new_channel = adapter.create_channel(conn)
         adapter.subscribe(new_channel, consumer_pid, consumer)
 
-        Logger.info("[Coney] - Connection re-restablished for #{inspect(consumer)}")
-
         {channel_ref, {consumer_pid, consumer, new_channel}}
       end)
+
+    Logger.info("[Coney] - Connection re-restablished for #{inspect(conn)}")
 
     %State{state | channels: new_channels}
   end
 
   defp close_channels(channels, adapter) do
-    Enum.each(channels, fn {_channel_ref, {consumer_pid, consumer, channel}} ->
-      Logger.info("[Coney] - Closing channel for #{inspect(consumer)} (#{inspect(consumer_pid)})")
+    Enum.each(channels, fn {_channel_ref, {_consumer_pid, _consumer, channel}} ->
       adapter.close_channel(channel)
     end)
+
+    Logger.info("[Coney] - Closed #{map_size(channels)} channels")
   end
 end
