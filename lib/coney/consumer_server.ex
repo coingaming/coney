@@ -18,6 +18,8 @@ defmodule Coney.ConsumerServer do
   def init([consumer]) do
     chan = ConnectionServer.subscribe(consumer)
 
+    Logger.info("[Coney] - Started consumer #{inspect(consumer)}")
+
     {:ok, %{consumer: consumer, chan: chan, tasks: %{}}}
   end
 

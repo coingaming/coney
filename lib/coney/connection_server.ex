@@ -72,7 +72,8 @@ defmodule Coney.ConnectionServer do
   end
 
   @impl GenServer
-  def terminate(_reason, %State{amqp_conn: conn, adapter: adapter} = _state) do
+  def terminate(_reason, %State{amqp_conn: conn, adapter: adapter, channels: channels} = _state) do
+    close_channels(channels, adapter)
     :ok = adapter.close(conn)
     ConnectionRegistry.terminated(self())
   end
@@ -93,8 +94,7 @@ defmodule Coney.ConnectionServer do
         {:subscribe, consumer},
         {consumer_pid, _tag},
         %State{amqp_conn: conn, adapter: adapter, channels: channels} = state
-      )
-      when not is_nil(conn) do
+      ) do
     channel = adapter.create_channel(conn)
     channel_ref = :erlang.make_ref()
 
@@ -156,14 +156,22 @@ defmodule Coney.ConnectionServer do
 
   defp update_channels(%State{amqp_conn: conn, adapter: adapter, channels: channels} = state) do
     new_channels =
-      Enum.map(channels, fn {channel_ref, {consumer_pid, consumer, _dead_channel}} ->
+      Map.new(channels, fn {channel_ref, {consumer_pid, consumer, _dead_channel}} ->
         new_channel = adapter.create_channel(conn)
         adapter.subscribe(new_channel, consumer_pid, consumer)
 
+        Logger.info("[Coney] - Connection re-restablished for #{inspect(consumer)}")
+
         {channel_ref, {consumer_pid, consumer, new_channel}}
       end)
-      |> Map.new()
 
     %State{state | channels: new_channels}
+  end
+
+  defp close_channels(channels, adapter) do
+    Enum.each(channels, fn {_channel_ref, {consumer_pid, consumer, channel}} ->
+      Logger.info("[Coney] - Closing channel for #{inspect(consumer)} (#{consumer_pid})")
+      adapter.close_channel(channel)
+    end)
   end
 end
