@@ -1,4 +1,10 @@
 defmodule Coney.ApplicationSupervisor do
+  @moduledoc """
+  Supervisor responsible of `ConnectionServer` and `ConsumerSupervisor`.
+
+  Main entry point of the application.
+  """
+
   use Supervisor
 
   alias Coney.{ConsumerSupervisor, ConnectionServer}
@@ -14,12 +20,13 @@ defmodule Coney.ApplicationSupervisor do
     }
   end
 
+  @impl Supervisor
   def init([consumers]) do
     settings = settings()
 
     children = [
-      ConsumerSupervisor,
-      {ConnectionServer, [consumers, settings]}
+      {ConnectionServer, [settings]},
+      {ConsumerSupervisor, [consumers]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

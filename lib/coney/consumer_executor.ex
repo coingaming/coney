@@ -1,4 +1,8 @@
 defmodule Coney.ConsumerExecutor do
+  @moduledoc """
+  Module responsible for processing a rabbit message and send the response
+  back to `ConnectionServer`. Started (and monitored) by `ConsumerServer`.
+  """
   require Logger
 
   alias Coney.{ConnectionServer, ExecutionTask}

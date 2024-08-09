@@ -1,16 +1,19 @@
 defmodule Coney.ConsumerSupervisor do
-  use DynamicSupervisor
+  @moduledoc """
+  Supervisor for all ConsumerServer of the application.
+  """
+  use Supervisor
 
-  def start_link(_args) do
-    DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
+  alias Coney.ConsumerServer
+
+  def start_link([consumers]) do
+    Supervisor.start_link(__MODULE__, [consumers], name: __MODULE__)
   end
 
-  def init([]) do
-    DynamicSupervisor.init(strategy: :one_for_one)
-  end
+  @impl Supervisor
+  def init([consumers]) do
+    children = Enum.map(consumers, fn consumer -> {ConsumerServer, [consumer]} end)
 
-  def start_consumer(consumer, chan) do
-    spec = {Coney.ConsumerServer, [consumer, chan]}
-    DynamicSupervisor.start_child(__MODULE__, spec)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

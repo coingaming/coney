@@ -8,7 +8,22 @@ config :coney,
     url: "amqp://guest:guest@localhost",
     timeout: 1000
   },
-  workers: []
+  workers: [
+    FakeConsumer
+  ],
+  topology: %{
+    exchanges: [{:topic, "exchange", durable: false}],
+    queues: %{
+      "queue" => %{
+        options: [
+          durable: false
+        ],
+        bindings: [
+          [exchange: "exchange", options: [routing_key: "queue"]]
+        ]
+      }
+    }
+  }
 
 config :logger, level: :info
 

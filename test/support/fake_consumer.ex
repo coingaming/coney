@@ -18,6 +18,7 @@ defmodule FakeConsumer do
       :reject -> :reject
       :reply -> {:reply, :data}
       :exception -> raise "Exception happen"
+      _other -> :ok
     end
   end
 

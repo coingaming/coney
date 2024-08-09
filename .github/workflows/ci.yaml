@@ -21,7 +21,6 @@ jobs:
         ports:
           - "5672:5672"
 
-
     runs-on: ubuntu-latest
     name: Test on OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:

@@ -1,18 +1,29 @@
 defmodule Coney.ConsumerServer do
+  @moduledoc """
+  GenServer for handling RabbitMQ messages. Spawns and monitors one task per message
+  and forwards the response to `ConnectionServer`.
+  """
+
   use GenServer
 
   alias Coney.{ConnectionServer, ConsumerExecutor, ExecutionTask}
 
   require Logger
 
-  def start_link([consumer, chan]) do
-    GenServer.start_link(__MODULE__, [consumer, chan])
+  def start_link([consumer]) do
+    GenServer.start_link(__MODULE__, [consumer])
   end
 
-  def init([consumer, chan]) do
+  @impl GenServer
+  def init([consumer]) do
+    chan = ConnectionServer.subscribe(consumer)
+
+    Logger.info("[Coney] - Started consumer #{inspect(consumer)}")
+
     {:ok, %{consumer: consumer, chan: chan, tasks: %{}}}
   end
 
+  @impl GenServer
   def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, state) do
     {:noreply, state}
   end
