@@ -5,7 +5,7 @@ defmodule Coney.Mixfile do
     [
       app: :coney,
       version: "3.0.2",
-      elixir: ">= 1.10.0",
+      elixir: ">= 1.12.0",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       description: description(),
