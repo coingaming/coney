@@ -1,3 +1,7 @@
+## [3.0.2]
+
+### Bug fixes
+- Fix incorrect termination order where the connection to RabbitMQ was closed before the channels.
 
 ## [3.0.1]
 
