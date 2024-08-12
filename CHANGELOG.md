@@ -2,6 +2,7 @@
 
 ### Bug fixes
 - Fix incorrect termination order where the connection to RabbitMQ was closed before the channels.
+- Implemented monitoring for spawned messages to improve tracebility.
 
 ## [3.0.1]
 
