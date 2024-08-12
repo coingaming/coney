@@ -4,7 +4,7 @@ defmodule Coney.Mixfile do
   def project do
     [
       app: :coney,
-      version: "3.0.1",
+      version: "3.0.2",
       elixir: ">= 1.10.0",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -45,7 +45,7 @@ defmodule Coney.Mixfile do
     [
       name: :coney,
       files: ["lib", "mix.exs", "README.md", "LICENSE.txt"],
-      maintainers: ["Aleksandr Fomin"],
+      maintainers: ["Yolo Group"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/coingaming/coney"}
     ]
