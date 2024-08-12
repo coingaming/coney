@@ -1,4 +1,4 @@
-## [3.0.2]
+## [3.0.2] (2024-08-12)
 
 ### Bug fixes
 - Fix incorrect termination order where the connection to RabbitMQ was closed before the channels.
