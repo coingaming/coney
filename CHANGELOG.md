@@ -1,3 +1,9 @@
+## [3.1.0] (2024-08-14)
+
+### Enhancements
+- Add `:enabled` config value
+- `:adapter` config value is now optional and defaults to `Coney.RabbitConnection`
+
 ## [3.0.2] (2024-08-12)
 
 ### Bug fixes
