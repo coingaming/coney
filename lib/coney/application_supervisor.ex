@@ -24,17 +24,25 @@ defmodule Coney.ApplicationSupervisor do
   def init([consumers]) do
     settings = settings()
 
-    children = [
-      {ConnectionServer, [settings]},
-      {ConsumerSupervisor, [consumers]}
-    ]
+    {enabled?, settings} = Keyword.pop!(settings, :enabled)
+
+    children =
+      if enabled? do
+        [
+          {ConnectionServer, [settings]},
+          {ConsumerSupervisor, [consumers]}
+        ]
+      else
+        []
+      end
 
     Supervisor.init(children, strategy: :one_for_one)
   end
 
   def settings do
     [
-      adapter: Application.get_env(:coney, :adapter),
+      adapter: Application.get_env(:coney, :adapter, Coney.RabbitConnection),
+      enabled: Application.get_env(:coney, :enabled, true),
       settings: get_config(:settings, :settings),
       topology: get_config(:topology, :topology, %{exchanges: [], queues: []})
     ]

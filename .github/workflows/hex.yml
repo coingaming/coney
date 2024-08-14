@@ -6,10 +6,26 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    name: Publish
+    strategy:
+      matrix:
+        otp: ['26']
+        elixir: ['1.15.7']
+    env:
+      HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
     steps:
-      - name: Check out
-        uses: actions/checkout@v4
-      - name: Publish to Hex.pm
-        uses: wesleimp/action-publish-hex@v1
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-release-deps-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-release-deps-${{ hashFiles('**/mix.lock') }}
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-release-deps
+      - run: mix deps.get
+      - run: mix hex.publish --yes

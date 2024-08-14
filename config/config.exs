@@ -1,7 +1,6 @@
 import Config
 
 config :coney,
-  adapter: Coney.RabbitConnection,
   pool_size: 1,
   auto_start: true,
   settings: %{

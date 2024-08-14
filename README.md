@@ -42,7 +42,6 @@ Default config:
 ```elixir
 # config/config.exs
 config :coney,
-  adapter: Coney.RabbitConnection,
   auto_start: true,
   settings: %{
     url: "amqp://guest:guest@localhost", # or ["amqp://guest:guest@localhost", "amqp://guest:guest@other_host"]
@@ -77,7 +76,6 @@ Also, you can create a confuguration module (if you want to retreive settings fr
 ```elixir
 # config/config.exs
 config :coney,
-  adapter: Coney.RabbitConnection,
   auto_start: true,
   settings: RabbitConfig,
   topology: RabbitConfig
@@ -131,6 +129,12 @@ defmodule YourApplication do
     Supervisor.start_link([Coney.ApplicationSupervisor], [strategy: :one_for_one])
   end
 end
+```
+
+If you want to disable Coney altogether (useful for testing config) set `enabled: false`
+```elixir
+# config/config.exs
+config :coney, enabled: false, settings: %{}, topology: %{}
 ```
 
 ## Configure consumers
