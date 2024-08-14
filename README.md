@@ -134,7 +134,7 @@ end
 If you want to disable Coney altogether (useful for testing config) set `enabled: false`
 ```elixir
 # config/config.exs
-config :coney, enabled: false, settgins: %{}, topology: %{}
+config :coney, enabled: false, settings: %{}, topology: %{}
 ```
 
 ## Configure consumers
