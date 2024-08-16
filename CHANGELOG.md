@@ -1,3 +1,8 @@
+## [3.1.1] (2024-08-16)
+
+### Bug fixes
+- Fix missing `:name` when starting `ConsumerServer`
+
 ## [3.1.0] (2024-08-14)
 
 ### Enhancements
