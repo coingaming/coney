@@ -1,15 +1,23 @@
-## [3.1.1] (2024-08-16)
+## [3.1.2] (2024-08-16)
+
+### Bug fixes
+- Fix missing specification for `ConsumerServer` unique id
+
+### Internal
+- Prefix modules with `Coney.` to avoid conflicts
+
+## [3.1.1] (2024-08-16) - BROKEN
 
 ### Bug fixes
 - Fix missing `:name` when starting `ConsumerServer`
 
-## [3.1.0] (2024-08-14)
+## [3.1.0] (2024-08-14) - BROKEN
 
 ### Enhancements
 - Add `:enabled` config value
 - `:adapter` config value is now optional and defaults to `Coney.RabbitConnection`
 
-## [3.0.2] (2024-08-12)
+## [3.0.2] (2024-08-12) - BROKEN
 
 ### Bug fixes
 - Fix incorrect termination order where the connection to RabbitMQ was closed before the channels.
