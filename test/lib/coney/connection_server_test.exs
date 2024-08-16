@@ -58,7 +58,7 @@ defmodule Coney.ConnectionServerTest do
       # Subscribe a channel
       assert {:reply, channel_ref, connected_state} =
                ConnectionServer.handle_call(
-                 {:subscribe, FakeConsumer},
+                 {:subscribe, Coney.FakeConsumer},
                  {self(), :erlang.make_ref()},
                  state
                )
@@ -91,7 +91,7 @@ defmodule Coney.ConnectionServerTest do
       # Subscribe a channel
       assert {:reply, channel_ref, new_state} =
                ConnectionServer.handle_call(
-                 {:subscribe, FakeConsumer},
+                 {:subscribe, Coney.FakeConsumer},
                  {self(), :erlang.make_ref()},
                  state
                )
@@ -100,7 +100,7 @@ defmodule Coney.ConnectionServerTest do
 
       pid = self()
 
-      assert {^pid, FakeConsumer, _} = Map.get(new_state.channels, channel_ref)
+      assert {^pid, Coney.FakeConsumer, _} = Map.get(new_state.channels, channel_ref)
     end
   end
 end

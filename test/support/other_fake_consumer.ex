@@ -1,4 +1,4 @@
-defmodule Coney.FakeConsumer do
+defmodule Coney.OtherFakeConsumer do
   @behaviour Coney.Consumer
 
   def connection do

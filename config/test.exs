@@ -21,5 +21,6 @@ config :coney,
     timeout: 1000
   },
   workers: [
-    FakeConsumer
+    Coney.FakeConsumer,
+    Coney.OtherFakeConsumer
   ]

@@ -10,6 +10,13 @@ defmodule Coney.ConsumerServer do
 
   require Logger
 
+  def child_spec([consumer]) do
+    %{
+      id: consumer,
+      start: {__MODULE__, :start_link, [[consumer]]}
+    }
+  end
+
   def start_link([consumer]) do
     GenServer.start_link(__MODULE__, [consumer], name: consumer)
   end
