@@ -11,7 +11,7 @@ defmodule Coney.ConsumerServer do
   require Logger
 
   def start_link([consumer]) do
-    GenServer.start_link(__MODULE__, [consumer])
+    GenServer.start_link(__MODULE__, [consumer], name: consumer)
   end
 
   @impl GenServer
