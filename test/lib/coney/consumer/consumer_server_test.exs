@@ -4,11 +4,11 @@ defmodule ConsumerServerTest do
   alias Coney.ConsumerServer
 
   setup do
-    ref = Coney.ConnectionServer.subscribe(FakeConsumer)
+    ref = Coney.ConnectionServer.subscribe(Coney.FakeConsumer)
 
     [
-      args: [FakeConsumer],
-      state: %{consumer: FakeConsumer, tasks: %{}, chan: ref}
+      args: [Coney.FakeConsumer],
+      state: %{consumer: Coney.FakeConsumer, tasks: %{}, chan: ref}
     ]
   end
 
@@ -46,7 +46,7 @@ defmodule ConsumerServerTest do
 
   describe "handle_info/2" do
     setup do
-      %{state: %{consumer: FakeConsumer, tasks: Map.new(), chan: :erlang.make_ref()}}
+      %{state: %{consumer: Coney.FakeConsumer, tasks: Map.new(), chan: :erlang.make_ref()}}
     end
 
     test "demonitors a task once it completes successfully", %{state: state} do
