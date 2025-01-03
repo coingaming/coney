@@ -60,6 +60,16 @@ defmodule Coney.ConnectionServer do
     GenServer.call(__MODULE__, {:publish, exchange_name, routing_key, message})
   end
 
+  @spec publish_async(String.t(), any()) :: :ok
+  def publish_async(exchange_name, message) do
+    GenServer.cast(__MODULE__, {:publish, exchange_name, message})
+  end
+
+  @spec publish_async(String.t(), String.t(), any()) :: :ok
+  def publish_async(exchange_name, routing_key, message) do
+    GenServer.cast(__MODULE__, {:publish, exchange_name, routing_key, message})
+  end
+
   @spec subscribe(any()) :: reference()
   def subscribe(consumer) do
     GenServer.call(__MODULE__, {:subscribe, consumer})
@@ -133,6 +143,19 @@ defmodule Coney.ConnectionServer do
     state.adapter.publish(state.amqp_conn, exchange_name, routing_key, message)
 
     {:reply, :published, state}
+  end
+
+  @impl GenServer
+  def handle_cast({:publish, exchange_name, message}, %State{} = state) do
+    state.adapter.publish(state.amqp_conn, exchange_name, "", message)
+
+    {:noreply, state}
+  end
+
+  def handle_cast({:publish, exchange_name, routing_key, message}, %State{} = state) do
+    state.adapter.publish(state.amqp_conn, exchange_name, routing_key, message)
+
+    {:noreply, state}
   end
 
   defp rabbitmq_connect(
