@@ -1,3 +1,8 @@
+## [3.1.3] (2025-01-03)
+
+### Enhancements
+- Add asynchronous message publishing.
+
 ## [3.1.2] (2024-08-16)
 
 ### Bug fixes

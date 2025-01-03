@@ -19,6 +19,7 @@ Consumer server for RabbitMQ with message publishing functionality.
     - [Reply description](#Reply-description)
     - [The default exchange](#The-default-exchange)
   - [Publish message](#Publish-message)
+  - [Publish message asynchronously](#Publish-message-asynchronously)
   - [Checking connections](#Checking-connections)
   - [Contributing](#Contributing)
   - [License](#License)
@@ -265,6 +266,16 @@ Coney.publish("exchange", "message")
 # or
 
 Coney.publish("exchange", "routing_key", "message")
+```
+
+## Publish message asynchronously
+
+```elixir
+Coney.publish_async("exchange", "message")
+
+# or
+
+Coney.publish_async("exchange", "routing_key", "message")
 ```
 
 ## Checking connections
